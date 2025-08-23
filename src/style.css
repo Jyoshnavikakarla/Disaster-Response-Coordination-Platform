@@ -1,0 +1,526 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body, html {
+  height: 100%;
+  background: #fdfdfd;
+  color: #333;
+}
+
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #004080;
+  overflow-x: hidden;
+  transition: 0.4s;
+  padding-top: 60px;
+  z-index: 1000;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-size: 18px;
+  color: white;
+  transition: background 0.3s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background-color: #0066cc;
+  color: #fff;
+}
+
+.sidebar .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+}
+
+.open-btn {
+  font-size: 28px;
+  cursor: pointer;
+  color: white;
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  z-index: 1100;
+}
+
+.hero {
+  background: url("disaster-response.jpeg") no-repeat center center/cover;
+  height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  
+}
+
+.hero-text {
+  background: rgba(0,0,0,0.4);
+  padding: 1.5rem;
+  border-radius: 10px;
+  position: relative;
+  top: -120px; 
+  
+}
+
+
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+.page {
+  padding: 5rem 2rem;
+  max-width: 800px;
+  margin: auto;
+}
+
+.page h1 {
+  margin-bottom: 1rem;
+  color: #004080;
+}
+
+.page .tagline {
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.form-box label {
+  font-weight: bold;
+  color: #004080;
+}
+
+.form-box input,
+.form-box textarea {
+  padding: 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.form-box input:focus,
+.form-box textarea:focus {
+  border-color: #004080;
+  box-shadow: 0 0 5px rgba(0, 64, 128, 0.3);
+  outline: none;
+}
+
+.form-box button {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border: none;
+  background: #004080;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.form-box button:hover {
+  background: #0066cc;
+}
+
+.choice-box {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.choice-box button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  background: #004080;
+  color: white;
+  transition: background 0.3s;
+}
+
+.choice-box button:hover {
+  background: #0066cc;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 0.8rem;
+  text-align: left;
+}
+
+table th {
+  background: #004080;
+  color: white;
+}
+.chat-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  height: 300px;
+  overflow-y: auto;
+  background: #fafafa;
+  margin-bottom: 1rem;
+}
+
+.message {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+}
+
+.message.victim {
+  background: #ffe6e6;
+}
+
+.message.volunteer {
+  background: #e6f7ff;
+}
+
+.message.authority {
+  background: #e6ffe6;
+  font-weight: bold;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.chat-form button {
+  padding: 0.7rem 1rem;
+  background: #004080;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.chat-form button:hover {
+  background: #0066cc;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #004080;
+  color: #fff;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  background: #f4f6f8;
+  min-height: 100vh;
+}
+.page h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.page .tagline {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.form-box {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-box label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
+}
+
+.form-box input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-box input:focus {
+  border-color: #0078d4;
+  outline: none;
+}
+
+.form-box button {
+  width: 100%;
+  padding: 12px;
+  background-color: #0078d4;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-box button:hover {
+  background-color: #005fa3;
+}
+
+.form-box p {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.form-box a {
+  color: #0078d4;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-box a:hover {
+  text-decoration: underline;
+}
+/* About Page Alignment */
+.page.about-page {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.page.about-page h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2.2rem;
+  color: #004080;
+}
+
+.page.about-page h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
+  color: #333;
+}
+
+.page.about-page p {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.page.about-page ul {
+  display: inline-block;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.page.dashboard-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.4;
+}
+
+.page.dashboard-page h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #004080;
+}
+
+
+.page.dashboard-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.page.dashboard-page h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2.2rem;
+  color: #004080;
+}
+
+.page.dashboard-page h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+
+.page.dashboard-page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.page.dashboard-page th,
+.page.dashboard-page td {
+  border: 1px solid #ccc;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.page.dashboard-page th {
+  background: #004080;
+  color: white;
+}
+
+.page.dashboard-page ul {
+  display: inline-block;
+  text-align: left;
+  margin-top: 1rem;
+}
+/* ---------------- Alerts Page (Centered Layout) ---------------- */
+.page.alerts-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.4;   /* tighter spacing like dashboard */
+  text-align: center;
+}
+
+.page.alerts-page h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #004080;
+}
+
+.page.alerts-page h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  color: #333;
+}
+
+/* Alerts list */
+.page.alerts-page ul {
+  display: inline-block;  /* keeps list centered */
+  text-align: left;       /* bullets left aligned */
+  margin-top: 0.5rem;
+  margin-bottom: 1.2rem;
+  padding-left: 20px;
+}
+
+/* Chat box */
+.page.alerts-page #chat-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  height: 280px;
+  overflow-y: auto;
+  background: #fafafa;
+  margin: 0 auto 1rem auto;
+  max-width: 600px;
+  text-align: left;  /* keep messages aligned */
+}
+
+.page.alerts-page #chat-box div {
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+}
+
+.page.alerts-page #chat-box div:nth-child(1) {
+  background: #ffe6e6; /* Victim */
+}
+
+.page.alerts-page #chat-box div:nth-child(2) {
+  background: #e6f7ff; /* Volunteer */
+}
+
+.page.alerts-page #chat-box div:nth-child(3) {
+  background: #e6ffe6; /* Authority */
+  font-weight: bold;
+}
+
+/* Chat form */
+.page.alerts-page #chat-form {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.page.alerts-page #chat-form input {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.page.alerts-page #chat-form button {
+  padding: 0.6rem 1rem;
+  background: #004080;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.page.alerts-page #chat-form button:hover {
+  background: #0066cc;
+}
+
