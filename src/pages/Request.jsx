@@ -1,8 +1,32 @@
+import { useAppContext } from "../AppContext";
+import Swal from "sweetalert2";
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 export default function Request() {
+  const { victims, setVictims } = useAppContext();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("✅ Request submitted successfully!");
-    e.target.reset();
+    const form = e.target;
+
+    const newVictim = {
+      id: Date.now(),
+      name: form.name.value,
+      location: form.location.value,
+      contact: form.contact.value,
+      details: form.details.value
+    };
+
+    setVictims([...victims, newVictim]);
+
+    Swal.fire({
+      icon: 'success',
+      title: '✅ Request submitted successfully!',
+      showConfirmButton: false,
+      timer: 1500
+    });
+
+    form.reset();
   };
 
   return (
@@ -12,16 +36,16 @@ export default function Request() {
 
       <form className="form-box" onSubmit={handleSubmit}>
         <label>Full Name:</label>
-        <input type="text" placeholder="Enter your name" required />
+        <input type="text" name="name" placeholder="Enter your name" required />
 
         <label>Location:</label>
-        <input type="text" placeholder="Enter your location" required />
+        <input type="text" name="location" placeholder="Enter your location" required />
 
         <label>Contact Number:</label>
-        <input type="tel" placeholder="Enter your phone number" required />
+        <input type="tel" name="contact" placeholder="Enter your phone number" required />
 
         <label>Details of Emergency:</label>
-        <textarea placeholder="Describe the emergency..." required></textarea>
+        <textarea name="details" placeholder="Describe the emergency..." required></textarea>
 
         <button type="submit">Submit Request</button>
       </form>
