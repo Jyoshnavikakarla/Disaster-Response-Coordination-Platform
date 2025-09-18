@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 
+
 // Pages
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -40,6 +41,7 @@ function App() {
         <Route path="/map" element={<MapPage />} />
         <Route path="/selection" element={<Selection />} />
         <Route path="/register" element={<Register />} />
+       
       </Routes>
 
       {/* Footer */}
