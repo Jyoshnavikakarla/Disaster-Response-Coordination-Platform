@@ -1,45 +1,51 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../AppContext";
-import Swal from "sweetalert2"; // ✅ SweetAlert2 for popups
+import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
+import { useAppContext } from "../AppContext"; // ✅ import context
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const { users, setLoggedInUser } = useAppContext();
   const navigate = useNavigate();
+  const { setLoggedInUser } = useAppContext(); // ✅ get setter
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const foundUser = users.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (foundUser) {
-      setLoggedInUser(foundUser);
-
-      // ✅ SweetAlert2 success popup with tick
-      Swal.fire({
-        title: "Login Successful!",
-        icon: "success",
-        showConfirmButton: false,
-        timer: 2000,
-        didOpen: () => {
-          Swal.showLoading(); // optional loading animation
-        }
-      }).then(() => {
-        navigate("/"); // redirect to Home page
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-    } else {
-      // ✅ SweetAlert2 error popup
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Login failed");
+
+      // ✅ Set logged-in user in context
+      setLoggedInUser(data.user);
+
+      // ✅ Save token in localStorage (optional)
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+
       Swal.fire({
-        title: "Invalid email or password",
+        title: `Welcome, ${data.user.name}!`,
+        icon: "success",
+        showConfirmButton: false,
+        timer: 2000
+      }).then(() => {
+        navigate("/"); // redirect to home page
+      });
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        title: "Login failed",
         icon: "error",
-        confirmButtonText: "Try Again"
+        text: err.message
       });
     }
   };
@@ -47,32 +53,25 @@ export default function Login() {
   return (
     <main className="page">
       <h1>Login</h1>
-      <p className="tagline">
-        Access your account to coordinate, connect, and help faster.
-      </p>
+      <p className="tagline">Access your account to coordinate, connect, and help faster.</p>
 
       <form className="form-box" onSubmit={handleSubmit}>
-        <label>Email:</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+        <input 
+          type="email" 
+          placeholder="Email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+          required 
         />
-
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+        <input 
+          type="password" 
+          placeholder="Password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          required 
         />
-
         <button type="submit">Login</button>
-
-        <p>
-          New here? <a href="/register">Create account</a>
-        </p>
+        <p>New here? <a href="/register">Create account</a></p>
       </form>
     </main>
   );

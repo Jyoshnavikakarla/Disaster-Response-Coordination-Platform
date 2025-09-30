@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
+import { useEffect, useState } from 'react';
+import { fetchDisasters, postDisaster } from './api';
 
 
 // Pages
@@ -19,6 +21,25 @@ import Register from "./pages/Register";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+useEffect(() => {
+    fetchDisasters()
+      .then(setDisasters)
+      .catch((err) => setError(err.message));
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const name = e.target.name.value.trim();
+    const location = e.target.location.value.trim();
+
+    try {
+      const newDis = await postDisaster({ name, location });
+      setDisasters([...disasters, newDis]);
+      e.target.reset();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <>

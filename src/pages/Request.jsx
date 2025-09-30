@@ -3,36 +3,76 @@ import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default function Request() {
-  const { victims, setVictims } = useAppContext();
+  const { victims, setVictims, loggedInUser } = useAppContext();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
 
-    const newVictim = {
-      id: Date.now(),
+    if (!loggedInUser) {
+      Swal.fire({
+        icon: 'error',
+        title: '❌ Please login first!',
+      });
+      return;
+    }
+
+    const token = localStorage.getItem("token"); // ✅ get JWT token
+
+    const newRequest = {
       name: form.name.value,
       location: form.location.value,
       contact: form.contact.value,
-      details: form.details.value
+      details: form.details.value,
+      role: loggedInUser.role,   // victim or volunteer
+      userId: loggedInUser.id
     };
 
-    setVictims([...victims, newVictim]);
+    try {
+      const res = await fetch("http://localhost:5000/api/resources", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // ✅ send token
+        },
+        body: JSON.stringify(newRequest)
+      });
 
-    Swal.fire({
-      icon: 'success',
-      title: '✅ Request submitted successfully!',
-      showConfirmButton: false,
-      timer: 1500
-    });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Network response was not ok");
+      }
 
-    form.reset();
+      const result = await res.json();
+      console.log("Saved in backend:", result);
+
+      // Update local state
+      setVictims([...victims, { ...newRequest, id: result._id }]);
+
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Request submitted successfully!',
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+      form.reset();
+    } catch (err) {
+      console.error("Submission failed:", err);
+      Swal.fire({
+        icon: 'error',
+        title: '❌ Submission failed!',
+        text: err.message || 'Please try again.',
+      });
+    }
   };
 
   return (
     <main className="page">
       <h1>Help Request Form</h1>
-      <p className="tagline">Submit your request for assistance. Authorities and volunteers will be notified.</p>
+      <p className="tagline">
+        Submit your request for assistance. Authorities and volunteers will be notified.
+      </p>
 
       <form className="form-box" onSubmit={handleSubmit}>
         <label>Full Name:</label>
