@@ -1,21 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState([
-    { type: "ALERT", message: "Heavy flooding in Riverside area – avoid travel." },
-    { type: "INFO", message: "Relief camp set up at Central School, Sector 5." },
-    { type: "ALERT", message: "Power outage expected in North Zone – keep essentials ready." },
-    { type: "INFO", message: "Safe Shelters arranged 1km away from city." },
-  ]);
-
+  const [alerts, setAlerts] = useState([]);
   const [chatMessages, setChatMessages] = useState([
     { sender: "Victim", time: "10:05 AM", message: "Medical help in block A." },
     { sender: "Volunteer", time: "10:07 AM", message: "Bringing supplies in 20 minutes." },
     { sender: "Authority", time: "10:10 AM", message: "Medical team dispatched." },
   ]);
 
+  // ---------------- Fetch alerts from backend ----------------
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/alerts");
+        if (!res.ok) throw new Error("Failed to fetch alerts");
+        const data = await res.json();
+        setAlerts(data);
+      } catch (err) {
+        console.error("Failed to fetch alerts:", err);
+      }
+    };
+    fetchAlerts();
+  }, []);
+
+  // ---------------- Handle chat message submission ----------------
   const handleChatSubmit = (e) => {
     e.preventDefault();
     const input = e.target.elements.chatInput;
@@ -26,8 +36,9 @@ export default function AlertsPage() {
     }
   };
 
-  const addAlert = () => {
-    Swal.fire({
+  // ---------------- Add new alert ----------------
+  const addAlert = async () => {
+    const { value: formValues } = await Swal.fire({
       title: 'Add New Alert',
       html:
         '<select id="swal-type" class="swal2-input">' +
@@ -38,19 +49,37 @@ export default function AlertsPage() {
       focusConfirm: false,
       preConfirm: () => {
         const type = document.getElementById('swal-type').value;
-        const message = document.getElementById('swal-message').value;
-        if (!message) {
-          Swal.showValidationMessage('Please enter an alert message');
-          return;
-        }
+        const message = document.getElementById('swal-message').value.trim();
+        if (!message) Swal.showValidationMessage('Please enter an alert message');
         return { type, message };
       }
-    }).then(result => {
-      if (result.isConfirmed) {
-        setAlerts([...alerts, result.value]);
-        Swal.fire({ icon: 'success', title: 'Alert added!', showConfirmButton: false, timer: 1500 });
-      }
     });
+
+    if (formValues) {
+      try {
+        // Send POST request to backend
+        const res = await fetch("http://localhost:5000/api/alerts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formValues)
+        });
+
+        if (!res.ok) throw new Error("Failed to add alert");
+
+        const savedAlert = await res.json();
+        setAlerts([savedAlert, ...alerts]);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Alert added!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Failed to add alert', text: err.message });
+      }
+    }
   };
 
   return (
@@ -62,12 +91,10 @@ export default function AlertsPage() {
       <section>
         <h2>Emergency Alerts</h2>
         <ul>
-          {alerts.map((a, i) => (
-            <li key={i}><strong>[{a.type}]</strong> {a.message}</li>
+          {alerts.map(a => (
+            <li key={a._id}><strong>[{a.type}]</strong> {a.message}</li>
           ))}
         </ul>
-
-        {/* Centered Add Alert Button */}
         <div style={{ textAlign: "center", marginTop: "10px" }}>
           <button onClick={addAlert}>➕ Add Alert</button>
         </div>
@@ -76,14 +103,14 @@ export default function AlertsPage() {
       {/* Live Chat */}
       <section>
         <h2>Live Chat</h2>
-        <div 
-          id="chat-box" 
-          style={{ 
-            maxHeight: "300px", 
-            overflowY: "auto", 
-            border: "1px solid #ccc", 
-            padding: "10px", 
-            marginBottom: "10px" 
+        <div
+          id="chat-box"
+          style={{
+            maxHeight: "300px",
+            overflowY: "auto",
+            border: "1px solid #ccc",
+            padding: "10px",
+            marginBottom: "10px"
           }}
         >
           {chatMessages.map((m, i) => {
@@ -94,13 +121,13 @@ export default function AlertsPage() {
             else if (m.sender === "You") bgColor = "#fff2cc";
 
             return (
-              <div 
-                key={i} 
-                style={{ 
-                  backgroundColor: bgColor, 
-                  padding: "5px 10px", 
-                  margin: "5px 0", 
-                  borderRadius: "5px" 
+              <div
+                key={i}
+                style={{
+                  backgroundColor: bgColor,
+                  padding: "5px 10px",
+                  margin: "5px 0",
+                  borderRadius: "5px"
                 }}
               >
                 <strong>{m.sender}</strong> ({m.time}): {m.message}
