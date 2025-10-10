@@ -15,7 +15,10 @@ import Alerts from "./pages/Alerts";
 import MapPage from "./pages/MapPage";
 import Selection from "./pages/Selection";
 import Register from "./pages/Register";
-import UserDashboard from "./pages/UserDashboard.jsx";
+import UserDashboard from "./pages/UserDashboard";
+
+
+
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,10 +51,7 @@ function App() {
           path="/volunteer"
           element={loggedInUser ? <Volunteer /> : <Navigate to="/login" />}
         />
-        <Route
-          path="/dashboard"
-          element={loggedInUser ? <UserDashboard /> : <Navigate to="/login" />}
-        />
+       <Route path="/dashboard" element={<UserDashboard />} />
 
         {/* Authority only */}
         <Route

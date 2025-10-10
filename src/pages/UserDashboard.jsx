@@ -1,132 +1,188 @@
-// src/pages/UserDashboard.jsx
 import { useEffect, useState } from "react";
-import { useAppContext } from "../AppContext.jsx";
+import { useAppContext } from "../AppContext.jsx"; // ✅ FIX: correct relative path
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Bar, Line, Pie } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
-
-// 3️⃣ Register chart components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
 import Swal from "sweetalert2";
-import 'sweetalert2/dist/sweetalert2.min.css';
+import "sweetalert2/dist/sweetalert2.min.css";
 
-export default function UserDashboard() {
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const UserDashboard = () => {
   const { loggedInUser } = useAppContext();
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch user-specific data
   useEffect(() => {
     if (!loggedInUser) return;
-    const endpoint = loggedInUser.role === "victim"
-      ? `/api/user/${loggedInUser.id}/requests`
-      : `/api/user/${loggedInUser.id}/activities`;
 
-    fetch(endpoint, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-    })
-      .then(res => res.json())
-      .then(res => setData(res.requests || res.activities))
-      .catch(err => console.error(err));
+    const endpoint =
+      loggedInUser.role === "victim"
+        ? `http://localhost:5000/api/user/${loggedInUser.id}/requests`
+        : `http://localhost:5000/api/user/${loggedInUser.id}/activities`;
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch data");
+
+        const result = await response.json();
+
+        // ✅ FIX: ensure it's always an array
+        setData(Array.isArray(result) ? result : []);
+      } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Server error. Please try again later.", "error");
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [loggedInUser]);
 
-  // Initialize map for victim requests
   useEffect(() => {
-    if (!loggedInUser || loggedInUser.role !== "victim" || !data.length) return;
+    if (loggedInUser?.role === "victim" && Array.isArray(data) && data.length > 0) {
+      const map = L.map("map").setView(
+        [data[0].latitude || 31.1471, data[0].longitude || 75.3412],
+        7
+      );
 
-    const map = L.map("dashboard-map").setView([20, 80], 4);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+      }).addTo(map);
 
-    data.forEach(d => {
-      if (d.lat && d.lng) {
-        L.marker([d.lat, d.lng])
-          .addTo(map)
-          .bindPopup(`<b>${d.name}</b><br/>${d.location}<br/>${d.details}`);
-      }
-    });
+      data.forEach((item) => {
+        if (item.latitude && item.longitude) {
+          L.marker([item.latitude, item.longitude])
+            .addTo(map)
+            .bindPopup(`<b>${item.request}</b><br/>Status: ${item.status}`);
+        }
+      });
 
-    return () => map.remove();
-  }, [data, loggedInUser]);
+      return () => map.remove();
+    }
+  }, [loggedInUser, data]);
 
-  if (!loggedInUser) return <p>Please login to view your dashboard.</p>;
+  if (loading) return <p>Loading dashboard...</p>;
 
-  // Prepare chart data for volunteers
+  // ✅ Safe chart data setup
   const chartData = {
-    labels: data.map(a => new Date(a.date).toLocaleDateString()),
+    labels: Array.isArray(data) ? data.map((item) => item.date || "N/A") : [],
     datasets: [
       {
         label: "Tasks Completed",
-        data: data.map(a => a.status === "completed" ? 1 : 0),
-        backgroundColor: "#4caf50",
+        data: Array.isArray(data)
+          ? data.map((item) => (item.completed ? 1 : 0))
+          : [],
+        backgroundColor: "#42A5F5",
       },
     ],
   };
 
   return (
-    <main className="page dashboard-page">
-      <h1>Hello, {loggedInUser.name}!</h1>
+    <div style={{ padding: "20px" }}>
+      <h2>Welcome, {loggedInUser?.name}</h2>
+      <h4>Role: {loggedInUser?.role}</h4>
 
-      {/* Summary Cards */}
-      <div className="cards-container" style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-        <div className="card" style={{ padding: "20px", background: "#f5f5f5", borderRadius: "8px" }}>
-          Total {loggedInUser.role === "victim" ? "Requests" : "Activities"}: {data.length}
-        </div>
-      </div>
+      {/* Victim Map */}
+      {loggedInUser?.role === "victim" ? (
+        <>
+          <h3>Your Request Locations</h3>
+          <div
+            id="map"
+            style={{
+              height: "400px",
+              width: "100%",
+              borderRadius: "10px",
+              marginBottom: "20px",
+            }}
+          ></div>
+        </>
+      ) : (
+        <>
+          <h3>Volunteer Task Overview</h3>
+          <div style={{ width: "80%", margin: "auto" }}>
+            <Bar data={chartData} />
+          </div>
+        </>
+      )}
 
-      {/* Table */}
-      <table style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#eee" }}>
-            {loggedInUser.role === "victim"
-              ? ["Request", "Location", "Status"]
-              : ["Task", "Location", "Date", "Status"]}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length ? data.map((d, i) => (
-            <tr key={i} style={{ borderBottom: "1px solid #ccc" }}>
-              {loggedInUser.role === "victim"
-                ? [<td key={0}>{d.details}</td>, <td key={1}>{d.location}</td>, <td key={2}>{d.status}</td>]
-                : [<td key={0}>{d.task}</td>, <td key={1}>{d.location}</td>, <td key={2}>{new Date(d.date).toLocaleDateString()}</td>, <td key={3}>{d.status}</td>]}
+      {/* Data Table */}
+      <div style={{ marginTop: "30px" }}>
+        <h3>
+          {loggedInUser?.role === "victim" ? "Your Requests" : "Your Activities"}
+        </h3>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "10px",
+            border: "1px solid #ddd",
+          }}
+        >
+          <thead>
+            <tr style={{ background: "#eee" }}>
+              {(loggedInUser?.role === "victim"
+                ? ["Request", "Location", "Status"]
+                : ["Task", "Location", "Date", "Status"]
+              ).map((header, i) => (
+                <th
+                  key={i}
+                  style={{ padding: "8px", border: "1px solid #ddd" }}
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
-          )) : (
-            <tr><td colSpan={loggedInUser.role === "victim" ? 3 : 4} style={{ textAlign: "center" }}>No data available.</td></tr>
-          )}
-        </tbody>
-      </table>
-
-      {/* Chart for volunteer activity */}
-      {loggedInUser.role === "volunteer" && data.length > 0 && (
-        <div style={{ width: "60%", margin: "40px auto" }}>
-          <Bar data={chartData} />
-        </div>
-      )}
-
-      {/* Mini Map for victims */}
-      {loggedInUser.role === "victim" && data.length > 0 && (
-        <div id="dashboard-map" style={{ height: "400px", marginTop: "40px", borderRadius: "8px", border: "1px solid #ccc" }}></div>
-      )}
-    </main>
+          </thead>
+          <tbody>
+            {Array.isArray(data) && data.length > 0 ? (
+              data.map((item, index) => (
+                <tr key={index}>
+                  <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                    {item.request || item.task}
+                  </td>
+                  <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                    {item.location}
+                  </td>
+                  {loggedInUser?.role !== "victim" && (
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                      {item.date || "N/A"}
+                    </td>
+                  )}
+                  <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                    {item.status}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" style={{ textAlign: "center", padding: "10px" }}>
+                  No records found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
-}
+};
+
+export default UserDashboard;
