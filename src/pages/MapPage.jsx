@@ -1,49 +1,59 @@
-// src/pages/MapPage.jsx
 import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAppContext } from "../AppContext.jsx";
+import RecommendedContent from "../components/RecommendedContent.jsx";
 
-// Optional: custom icons
+
 const victimIcon = new L.Icon({
-  iconUrl: "/victimIcon.jpg", // put a PNG in public folder
+  iconUrl: "/victimIcon.jpg",
   iconSize: [30, 40],
   iconAnchor: [15, 40],
   popupAnchor: [0, -35],
 });
 
 const volunteerIcon = new L.Icon({
-  iconUrl: "/volunteerIcon.jpg", // put a PNG in public folder
+  iconUrl: "/volunteerIcon.jpg",
   iconSize: [30, 40],
   iconAnchor: [15, 40],
   popupAnchor: [0, -35],
 });
 
 export default function MapPage() {
-  const { victims, volunteers } = useAppContext();
+  const { victims, volunteers, loggedInUser } = useAppContext();
 
+  // ---------------- Track page visit for recommendations ----------------
   useEffect(() => {
-    // Initialize map
+    if (loggedInUser) {
+      fetch("http://localhost:5000/api/user/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: loggedInUser.id, page: "map" })
+      }).catch(err => console.error("Failed to record history:", err));
+    }
+  }, [loggedInUser]);
+
+  // ---------------- Initialize Leaflet Map ----------------
+  useEffect(() => {
     const map = L.map("map", { zoomControl: false }).setView([20, 80], 5);
     L.control.zoom({ position: "topright" }).addTo(map);
 
-    // Add tile layer
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
 
-    // Infection Zones (example)
     const infectionZones = [
       { coords: [28.7041, 77.1025], color: "red", popup: "High Infection - Delhi" },
       { coords: [19.0760, 72.8777], color: "orange", popup: "Medium Infection - Mumbai" },
       { coords: [13.0827, 80.2707], color: "yellow", popup: "Low Infection - Chennai" },
     ];
 
-    infectionZones.forEach((zone) =>
-      L.circle(zone.coords, { color: zone.color, radius: 1000 }).addTo(map).bindPopup(zone.popup)
+    infectionZones.forEach(zone =>
+      L.circle(zone.coords, { color: zone.color, radius: 1000 })
+        .addTo(map)
+        .bindPopup(zone.popup)
     );
 
-    // Add Victims
     victims.forEach(({ lat, lng, name, location }) => {
       if (lat && lng) {
         L.marker([lat, lng], { icon: victimIcon })
@@ -52,7 +62,6 @@ export default function MapPage() {
       }
     });
 
-    // Add Volunteers
     volunteers.forEach(({ lat, lng, name, resources }) => {
       if (lat && lng) {
         L.marker([lat, lng], { icon: volunteerIcon })
@@ -61,8 +70,14 @@ export default function MapPage() {
       }
     });
 
-    return () => map.remove(); // clean up map on unmount
-  }, [victims, volunteers]); // re-run whenever context updates
+    return () => map.remove();
+  }, [victims, volunteers]);
 
-  return <div id="map" style={{ height: "90vh", width: "100%" }}></div>;
+  return (
+    <div style={{ position: "relative", height: "90vh", width: "100%" }}>
+      <div id="map" style={{ height: "100%", width: "100%" }}></div>
+      <RecommendedContent /> {/* overlays only if recommendations exist */}
+      
+    </div>
+  );
 }

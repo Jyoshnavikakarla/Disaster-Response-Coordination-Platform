@@ -2,6 +2,7 @@ import { useAppContext } from "../AppContext";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useState, useEffect } from "react";
+import RecommendedContent from "../components/RecommendedContent.jsx";
 
 export default function Request() {
   const { victims, setVictims, loggedInUser } = useAppContext();
@@ -119,6 +120,7 @@ export default function Request() {
 
         <button type="submit">Submit Request</button>
       </form>
+      <RecommendedContent />
     </main>
   );
 }

@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }) {
     });
   };
 
-  // Function to handle guest click
+  // Guests cannot access protected pages
   const handleGuestClick = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -46,52 +46,48 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <div className="sidebar" style={{ width: isOpen ? "250px" : "0" }}>
       {/* Close button */}
-      <button className="close-btn" onClick={onClose}>
-        &times;
-      </button>
+      <button className="close-btn" onClick={onClose}>&times;</button>
 
-      {/* Common links visible to all */}
+      {/* Common links */}
       <Link to="/" className={location.pathname === "/" ? "active" : ""}>Home</Link>
       <Link to="/about" className={location.pathname === "/about" ? "active" : ""}>About</Link>
       <Link to="/selection" className={location.pathname === "/selection" ? "active" : ""}>Selection</Link>
 
-      {/* Role-based or guest links */}
+      {/* Logged-in users */}
       {loggedInUser ? (
         <>
-          <Link
-            to="/map"
-            className={location.pathname === "/map" ? "active" : ""}
-          >
-            Response Map
-          </Link>
-          <Link
-            to="/request"
-            className={location.pathname === "/request" ? "active" : ""}
-          >
-            Victim Request
-          </Link>
-          <Link
-            to="/volunteer"
-            className={location.pathname === "/volunteer" ? "active" : ""}
-          >
-            Volunteer
-          </Link>
-          <Link
-            to="/alerts"
-            className={location.pathname === "/alerts" ? "active" : ""}
-          >
-            Alerts & Communication
-          </Link>
+          <Link to="/map" className={location.pathname === "/map" ? "active" : ""}>Response Map</Link>
+          <Link to="/request" className={location.pathname === "/request" ? "active" : ""}>Victim Request</Link>
+          <Link to="/volunteer" className={location.pathname === "/volunteer" ? "active" : ""}>Volunteer</Link>
+          <Link to="/alerts" className={location.pathname === "/alerts" ? "active" : ""}>Alerts & Communication</Link>
 
-          {/* Authority-only link */}
+          {/* Authority-only */}
           {loggedInUser.role === "authority" && (
-            <Link
-              to="/authority"
-              className={location.pathname === "/authority" ? "active" : ""}
-            >
-              Authority Dashboard
-            </Link>
+            <Link to="/authority" className={location.pathname === "/authority" ? "active" : ""}>Authority Dashboard</Link>
           )}
+
+          {/* User Dashboard */}
+          <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}>My Dashboard</Link>
+
+          {/* Greeting + Logout */}
+          <div style={{ padding: "12px", color: "white" }}>
+            <p>👋 Hello, {loggedInUser?.name}</p>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: "#0066cc",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                marginTop: "10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                width: "100%"
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </>
       ) : (
         <>
@@ -106,28 +102,6 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link to="/login" className={location.pathname === "/login" ? "active" : ""}>Login</Link>
           <Link to="/register" className={location.pathname === "/register" ? "active" : ""}>Register</Link>
         </>
-      )}
-
-      {/* Logged-in user info and logout */}
-      {loggedInUser && (
-        <div style={{ padding: "12px", color: "white" }}>
-          <p>👋 Hello, {loggedInUser.name}</p>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: "#0066cc",
-              color: "white",
-              border: "none",
-              padding: "8px 12px",
-              marginTop: "10px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              width: "100%"
-            }}
-          >
-            Logout
-          </button>
-        </div>
       )}
     </div>
   );

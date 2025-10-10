@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
-
+import { useAppContext } from "./AppContext.jsx";
 
 // Pages
 import Home from "./pages/Home";
@@ -15,9 +15,11 @@ import Alerts from "./pages/Alerts";
 import MapPage from "./pages/MapPage";
 import Selection from "./pages/Selection";
 import Register from "./pages/Register";
+import UserDashboard from "./pages/UserDashboard.jsx";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { loggedInUser } = useAppContext();
 
   return (
     <>
@@ -31,17 +33,42 @@ function App() {
 
       {/* Routes */}
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/request" element={<Request />} />
-        <Route path="/volunteer" element={<Volunteer />} />
-        <Route path="/authority" element={<Authority />} />
-        <Route path="/alerts" element={<Alerts />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/request"
+          element={loggedInUser ? <Request /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/volunteer"
+          element={loggedInUser ? <Volunteer /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/dashboard"
+          element={loggedInUser ? <UserDashboard /> : <Navigate to="/login" />}
+        />
+
+        {/* Authority only */}
+        <Route
+          path="/authority"
+          element={
+            loggedInUser?.role === "authority" ? (
+              <Authority />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Other routes accessible to everyone */}
         <Route path="/map" element={<MapPage />} />
         <Route path="/selection" element={<Selection />} />
-        <Route path="/register" element={<Register />} />
-       
+        <Route path="/alerts" element={<Alerts />} />
       </Routes>
 
       {/* Footer */}

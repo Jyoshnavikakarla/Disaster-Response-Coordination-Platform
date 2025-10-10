@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import RecommendedContent from "../components/RecommendedContent.jsx";
 
 export default function Selection() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Selection() {
         <button onClick={() => navigate("/request")}>🙋 Victim</button>
         <button onClick={() => navigate("/volunteer")}>🤝 Volunteer</button>
       </div>
+      <RecommendedContent />
     </main>
   );
 }
