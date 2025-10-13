@@ -51,7 +51,12 @@ function App() {
           path="/volunteer"
           element={loggedInUser ? <Volunteer /> : <Navigate to="/login" />}
         />
-       <Route path="/dashboard" element={<UserDashboard />} />
+       <Route
+  path="/dashboard"
+  element={
+    loggedInUser ? <UserDashboard /> : <Navigate to="/login" replace />
+  }
+/>
 
         {/* Authority only */}
         <Route
