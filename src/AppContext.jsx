@@ -1,24 +1,40 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [users, setUsers] = useState([]);
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [victims, setVictims] = useState([]);      // ✅ Global victim state
-  const [volunteers, setVolunteers] = useState([]); // ✅ Global volunteer state
+  const [victims, setVictims] = useState([]);
+  const [volunteers, setVolunteers] = useState([]);
+
+  // Load user from localStorage on app start
+  useEffect(() => {
+    const user = localStorage.getItem("loggedInUser");
+    const token = localStorage.getItem("token");
+    if (user && token) {
+      setLoggedInUser(JSON.parse(user));
+    }
+  }, []);
+
+  // Logout function
+  const logout = () => {
+    setLoggedInUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("loggedInUser");
+  };
 
   return (
-    <AppContext.Provider value={{
-      users,
-      setUsers,
-      loggedInUser,
-      setLoggedInUser,
-      victims,
-      setVictims,
-      volunteers,
-      setVolunteers
-    }}>
+    <AppContext.Provider
+      value={{
+        loggedInUser,
+        setLoggedInUser,
+        logout,
+        victims,
+        setVictims,
+        volunteers,
+        setVolunteers,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
