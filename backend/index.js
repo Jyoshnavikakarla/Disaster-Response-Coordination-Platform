@@ -9,7 +9,7 @@ const authRoutes = require('./src/routes/auth');
 const reportRoutes = require('./src/routes/reports');
 const resourceRoutes = require('./src/routes/resources');
 const alertRoutes = require('./src/routes/alerts');
-const recommendationRoutes = require('./src/routes/recommendations');
+const recommendationsRouter = require('./src/routes/recommendations');
 const userRoutes = require("./src/routes/user");
 const { errorHandler } = require('./src/middlewares/error');
 
@@ -25,7 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/alerts', alertRoutes);
-app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/recommendations', recommendationsRouter);
 app.use("/api/user", userRoutes);
 
 // Error handling middleware
