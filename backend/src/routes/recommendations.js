@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const authMiddleware  = require('../middlewares/auth');
+const Request = require('../models/Request');      // ✅ Add if not exists
+const Activity = require('../models/VolunteerActivity');    // ✅ Add if not exists
+const authMiddleware = require('../middlewares/auth');
 
 // GET recommendations for a user
 router.get('/:userId', authMiddleware, async (req, res) => {
@@ -11,8 +13,16 @@ router.get('/:userId', authMiddleware, async (req, res) => {
 
     let recommendations = [];
 
-    if (user.role === 'user') {
-      recommendations = ['volunteer', 'request', 'map'];
+    if (user.role === 'victim') {
+      // Example: suggest volunteers for the same location
+      const requests = await Request.find({ userId: user._id });
+      const locations = requests.map(r => r.location);
+      recommendations = ['volunteer', ...locations];  // Add role + personalized
+    } else if (user.role === 'volunteer') {
+      // Suggest tasks similar to completed ones
+      const activities = await Activity.find({ volunteerId: user._id, status: 'completed' });
+      const taskTypes = activities.map(a => a.taskType); 
+      recommendations = ['request', ...taskTypes];
     } else if (user.role === 'authority') {
       recommendations = ['map', 'alerts', 'volunteer'];
     }
