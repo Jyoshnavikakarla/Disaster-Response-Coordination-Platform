@@ -21,6 +21,8 @@ const UserDashboard = () => {
   const { loggedInUser } = useAppContext();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState([]); 
+
 
   useEffect(() => {
     if (!loggedInUser) return;
@@ -178,8 +180,23 @@ const UserDashboard = () => {
                 </td>
               </tr>
             )}
+            
           </tbody>
         </table>
+        {/* Recommendations */}
+{recommendations.length > 0 && (
+  <div style={{ marginTop: "30px" }}>
+    <h3>Recommended For You</h3>
+    <ul style={{ listStyle: "none", padding: 0 }}>
+      {recommendations.map((item, i) => (
+        <li key={i} style={{ padding: "8px", background: "#f0f0f0", marginBottom: "5px", borderRadius: "5px" }}>
+          {item}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
       </div>
     </div>
   );
