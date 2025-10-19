@@ -22,15 +22,22 @@ export default function Selection() {
     <main className="page">
       <h1>How Can We Assist You?</h1>
       <p className="tagline">Select whether you need help or want to volunteer</p>
-
-      <div className="choice-box">
-        <button onClick={() => navigate("/request")} aria-label="Victim assistance page">
+      <div className="choice-box" role="group" aria-label="Choose your action">
+        <button
+          onClick={() => navigate("/request")}
+          aria-label="Victim assistance page"
+        >
           🙋 Victim
         </button>
-        <button onClick={() => navigate("/volunteer")} aria-label="Volunteer signup page">
+        <button
+          onClick={() => navigate("/volunteer")}
+          aria-label="Volunteer signup page"
+        >
           🤝 Volunteer
         </button>
       </div>
+
+
 
       <div className="recommendation-section">
         <RecommendedContent />
