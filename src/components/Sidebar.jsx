@@ -7,8 +7,9 @@ import "sweetalert2/dist/sweetalert2.min.css";
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { loggedInUser, setLoggedInUser } = useAppContext();
+  const { loggedInUser, logout } = useAppContext();
 
+  // ✅ Logout handler
   const handleLogout = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -17,11 +18,9 @@ export default function Sidebar({ isOpen, onClose }) {
       showCancelButton: true,
       confirmButtonText: "Yes, logout",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
     }).then((result) => {
       if (result.isConfirmed) {
-        setLoggedInUser(null);
+        logout();
         Swal.fire({
           icon: "success",
           title: "Logged out successfully",
@@ -34,7 +33,7 @@ export default function Sidebar({ isOpen, onClose }) {
     });
   };
 
-  // Guests cannot access protected pages
+  // ✅ Guest click handler
   const handleGuestClick = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -45,28 +44,71 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <div className="sidebar" style={{ width: isOpen ? "250px" : "0" }}>
-      {/* Close button */}
-      <button className="close-btn" onClick={onClose}>&times;</button>
+      <button className="close-btn" onClick={onClose}>
+        &times;
+      </button>
 
       {/* Common links */}
-      <Link to="/" className={location.pathname === "/" ? "active" : ""}>Home</Link>
-      <Link to="/about" className={location.pathname === "/about" ? "active" : ""}>About</Link>
-      <Link to="/selection" className={location.pathname === "/selection" ? "active" : ""}>Selection</Link>
+      <Link to="/" className={location.pathname === "/" ? "active" : ""}>
+        Home
+      </Link>
+      <Link
+        to="/about"
+        className={location.pathname === "/about" ? "active" : ""}
+      >
+        About
+      </Link>
+      <Link
+        to="/selection"
+        className={location.pathname === "/selection" ? "active" : ""}
+      >
+        Selection
+      </Link>
 
       {/* Logged-in users */}
       {loggedInUser ? (
         <>
-          <Link to="/map" className={location.pathname === "/map" ? "active" : ""}>Response Map</Link>
-          <Link to="/request" className={location.pathname === "/request" ? "active" : ""}>Victim Request</Link>
-          <Link to="/volunteer" className={location.pathname === "/volunteer" ? "active" : ""}>Volunteer</Link>
-          <Link to="/alerts" className={location.pathname === "/alerts" ? "active" : ""}>Alerts & Communication</Link>
+          <Link
+            to="/map"
+            className={location.pathname === "/map" ? "active" : ""}
+          >
+            Response Map
+          </Link>
+          <Link
+            to="/request"
+            className={location.pathname === "/request" ? "active" : ""}
+          >
+            Victim Request
+          </Link>
+          <Link
+            to="/volunteer"
+            className={location.pathname === "/volunteer" ? "active" : ""}
+          >
+            Volunteer
+          </Link>
+          <Link
+            to="/alerts"
+            className={location.pathname === "/alerts" ? "active" : ""}
+          >
+            Alerts & Communication
+          </Link>
 
-         
+          {loggedInUser.role === "authority" && (
+            <Link
+              to="/authority"
+              className={location.pathname === "/authority" ? "active" : ""}
+            >
+              Authority Dashboard
+            </Link>
+          )}
 
-          {/* User Dashboard */}
-          <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}> Dashboard</Link>
+          <Link
+            to="/dashboard"
+            className={location.pathname === "/dashboard" ? "active" : ""}
+          >
+            My Dashboard
+          </Link>
 
-          {/* Greeting + Logout */}
           <div style={{ padding: "12px", color: "white" }}>
             <p>👋 Hello, {loggedInUser?.name}</p>
             <button
@@ -79,7 +121,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 marginTop: "10px",
                 borderRadius: "6px",
                 cursor: "pointer",
-                width: "100%"
+                width: "100%",
               }}
             >
               Logout
@@ -88,16 +130,35 @@ export default function Sidebar({ isOpen, onClose }) {
         </>
       ) : (
         <>
-          {/* Guests: show all links but warn on click */}
-          <Link to="/map" onClick={handleGuestClick}>Response Map</Link>
-          <Link to="/request" onClick={handleGuestClick}>Victim Request</Link>
-          <Link to="/volunteer" onClick={handleGuestClick}>Volunteer</Link>
-          <Link to="/alerts" onClick={handleGuestClick}>Alerts & Communication</Link>
-          <Link to="/authority" onClick={handleGuestClick}>Authority Dashboard</Link>
+          {/* Guest links */}
+          <Link to="/map" onClick={handleGuestClick}>
+            Response Map
+          </Link>
+          <Link to="/request" onClick={handleGuestClick}>
+            Victim Request
+          </Link>
+          <Link to="/volunteer" onClick={handleGuestClick}>
+            Volunteer
+          </Link>
+          <Link to="/alerts" onClick={handleGuestClick}>
+            Alerts & Communication
+          </Link>
+          <Link to="/authority" onClick={handleGuestClick}>
+            Authority Dashboard
+          </Link>
 
-          {/* Guests can access Login/Register */}
-          <Link to="/login" className={location.pathname === "/login" ? "active" : ""}>Login</Link>
-          <Link to="/register" className={location.pathname === "/register" ? "active" : ""}>Register</Link>
+          <Link
+            to="/login"
+            className={location.pathname === "/login" ? "active" : ""}
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className={location.pathname === "/register" ? "active" : ""}
+          >
+            Register
+          </Link>
         </>
       )}
     </div>
