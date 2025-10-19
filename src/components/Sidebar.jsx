@@ -61,13 +61,10 @@ export default function Sidebar({ isOpen, onClose }) {
           <Link to="/volunteer" className={location.pathname === "/volunteer" ? "active" : ""}>Volunteer</Link>
           <Link to="/alerts" className={location.pathname === "/alerts" ? "active" : ""}>Alerts & Communication</Link>
 
-          {/* Authority-only */}
-          {loggedInUser.role === "authority" && (
-            <Link to="/authority" className={location.pathname === "/authority" ? "active" : ""}>Authority Dashboard</Link>
-          )}
+         
 
           {/* User Dashboard */}
-          <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}>My Dashboard</Link>
+          <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}> Dashboard</Link>
 
           {/* Greeting + Logout */}
           <div style={{ padding: "12px", color: "white" }}>
