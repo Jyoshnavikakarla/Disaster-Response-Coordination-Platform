@@ -10,12 +10,16 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Request from "./pages/Request";
 import Volunteer from "./pages/Volunteer";
-import Authority from "./pages/Authority";
 import Alerts from "./pages/Alerts";
 import MapPage from "./pages/MapPage";
 import Selection from "./pages/Selection";
 import Register from "./pages/Register";
-import UserDashboard from "./pages/UserDashboard.jsx";
+import UserDashboard from "./pages/UserDashboard";
+import AuthorityDashboard from "./pages/AuthorityDashboard.jsx";
+import RequestDetails from "./pages/RequestDetails";
+
+import EditProfile from "./pages/EditProfile";
+
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,27 +52,32 @@ function App() {
           path="/volunteer"
           element={loggedInUser ? <Volunteer /> : <Navigate to="/login" />}
         />
+        <Route path="/requests/:id" element={<RequestDetails />} />
+
+
+        {/* Dashboard with role-based access */}
         <Route
           path="/dashboard"
-          element={loggedInUser ? <UserDashboard /> : <Navigate to="/login" />}
-        />
-
-        {/* Authority only */}
-        <Route
-          path="/authority"
           element={
-            loggedInUser?.role === "authority" ? (
-              <Authority />
+            loggedInUser ? (
+              loggedInUser.role === "authority" ? (
+                <AuthorityDashboard />
+              ) : (
+                <UserDashboard />
+              )
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/login" />
             )
           }
         />
 
-        {/* Other routes accessible to everyone */}
+        {/* Other Routes */}
         <Route path="/map" element={<MapPage />} />
         <Route path="/selection" element={<Selection />} />
         <Route path="/alerts" element={<Alerts />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
 
       {/* Footer */}
