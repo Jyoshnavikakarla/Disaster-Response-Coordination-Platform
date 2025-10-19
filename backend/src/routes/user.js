@@ -1,12 +1,13 @@
 // src/routes/user.js
-const express = require("express");
+import express from "express";
+import Request from "../models/Request.js";
+import VolunteerActivity from "../models/VolunteerActivity.js";
+import { protect } from "../middlewares/auth.js";
+
 const router = express.Router();
-const Request = require("../models/Request");
-const VolunteerActivity = require("../models/VolunteerActivity");
-const  authMiddleware  = require("../middlewares/auth");
 
 // Victim requests
-router.get("/:userId/requests", authMiddleware, async (req, res) => {
+router.get("/:userId/requests", protect, async (req, res) => {
   try {
     const requests = await Request.find({ userId: req.params.userId });
     res.json({ requests });
@@ -16,7 +17,7 @@ router.get("/:userId/requests", authMiddleware, async (req, res) => {
 });
 
 // Volunteer activities
-router.get("/:userId/activities", authMiddleware, async (req, res) => {
+router.get("/:userId/activities", protect, async (req, res) => {
   try {
     const activities = await VolunteerActivity.find({ volunteerId: req.params.userId });
     res.json({ activities });
@@ -25,4 +26,4 @@ router.get("/:userId/activities", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
