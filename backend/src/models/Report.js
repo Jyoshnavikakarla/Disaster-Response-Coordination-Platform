@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+// Report.js
+import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -7,4 +8,5 @@ const reportSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Report', reportSchema);
+const Report = mongoose.model('Report', reportSchema);
+export default Report;
