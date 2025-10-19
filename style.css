@@ -598,3 +598,40 @@ footer {
     width: 100%;
   }
 }
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.input-with-button {
+  position: relative;
+}
+
+.input-with-button input,
+.input-with-button textarea {
+  width: 100%;
+  padding-right: 40px; /* space for the speak button */
+  box-sizing: border-box;
+}
+
+.input-with-button button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 14px;
+}
