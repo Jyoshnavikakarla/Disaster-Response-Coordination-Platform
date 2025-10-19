@@ -1,26 +1,35 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/User');
-const authMiddleware  = require('../middlewares/auth');
+const User = require("../models/User");
+const { protect } = require("../middlewares/auth");
 
-// GET recommendations for a user
-router.get('/:userId', authMiddleware, async (req, res) => {
+// Get recommendations for user
+router.get("/:id", protect, async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    let recommendations = [];
+    // Example rule-based recommendations
+    const rules = {
+      volunteer: ["request", "map"],
+      request: ["map", "volunteer"],
+      map: ["alerts", "request"],
+      alerts: ["map", "volunteer"],
+      selection: ["map", "volunteer"],
+      about: ["map", "volunteer"],
+    };
 
-    if (user.role === 'user') {
-      recommendations = ['volunteer', 'request', 'map'];
-    } else if (user.role === 'authority') {
-      recommendations = ['map', 'alerts', 'volunteer'];
-    }
+    const recs = new Set();
+    user.history.forEach((page) => {
+      if (rules[page]) rules[page].forEach((r) => recs.add(r));
+    });
 
-    res.json({ recommendations });
+    res.json({ recommendations: Array.from(recs) });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
