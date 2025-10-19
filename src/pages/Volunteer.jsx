@@ -1,101 +1,161 @@
+// src/pages/Volunteer.jsx
 import { useState, useEffect } from "react";
 import { useAppContext } from "../AppContext.jsx";
 import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 import RecommendedContent from "../components/RecommendedContent.jsx";
 
 export default function Volunteer() {
-  const { volunteers, setVolunteers } = useAppContext();
+  const { volunteers, setVolunteers, loggedInUser } = useAppContext();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [resources, setResources] = useState([]);
   const [skills, setSkills] = useState("");
+  const [language, setLanguage] = useState("en-US");
   const [location, setLocation] = useState({ lat: "", lng: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  // Auto-detect live location
+  // Auto-detect location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.error("Geolocation error:", err),
+        (err) => console.error(err),
         { enableHighAccuracy: true }
       );
     }
+     Swal.fire({
+    title: "🎧 & 🎤 Buttons Info",
+    html: `
+      <p><b>🎧 Hear:</b> Click this to listen to the question in the selected language.</p>
+      <p><b>🎤 Speak:</b> Click this to answer by speaking; your speech will be converted to text.</p>
+    `,
+    icon: "info",
+    confirmButtonText: "Got it!",
+    showCloseButton: true,
+  });
   }, []);
 
-  const handleCheckboxChange = (e) => {
-    const value = e.target.value;
-    setResources(e.target.checked ? [...resources, value] : resources.filter(r => r !== value));
+  const speak = (text) => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = language;
+    window.speechSynthesis.speak(utter);
   };
 
-  const handleSubmit = (e) => {
+  const listen = (setter) => {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      Swal.fire("Voice input not supported in this browser");
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = language;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (e) => setter(e.results[0][0].transcript);
+    recognition.start();
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+
+    if (!loggedInUser) {
+      Swal.fire({ icon: "error", title: "❌ Please login first!" });
+      speak("Please log in first.");
+      setSubmitting(false);
+      return;
+    }
     if (!name || !email || !phone) {
       Swal.fire({ icon: "error", title: "Please fill all required fields" });
+      speak("Please fill all required fields.");
+      setSubmitting(false);
       return;
     }
 
-    const newVolunteer = {
-      id: Date.now(),
-      name,
-      email,
-      phone,
-      resources,
-      skills,
-      lat: location.lat,
-      lng: location.lng,
-    };
+    const token = localStorage.getItem("token");
+    const newVolunteer = { name, email, phone, resources, skills, lat: location.lat, lng: location.lng, userId: loggedInUser.id };
 
-    setVolunteers([...volunteers, newVolunteer]);
+    try {
+      if (token) {
+        const res = await fetch("http://localhost:5000/api/volunteers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(newVolunteer),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Network error");
+      }
 
-    Swal.fire({
-      icon: "success",
-      title: "✅ Thank you for registering as a volunteer!",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-
-    setName("");
-    setEmail("");
-    setPhone("");
-    setResources([]);
-    setSkills("");
+      setVolunteers([...volunteers, newVolunteer]);
+      Swal.fire({ icon: "success", title: "✅ Volunteer registered!", timer: 1500, showConfirmButton: false });
+      speak("Thank you for registering as a volunteer.");
+      setName(""); setEmail(""); setPhone(""); setResources([]); setSkills("");
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "❌ Registration failed", text: err.message });
+      speak("Registration failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const voiceInput = (label, value, setter, placeholder) => (
+    <div className="voice-input-wrapper">
+      <label>{label}:</label>
+      <input value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} required />
+      <div className="voice-buttons">
+        <button type="button" onClick={() => speak(label)}>🎧</button>
+        <button type="button" onClick={() => listen(setter)}>🎤</button>
+      </div>
+    </div>
+  );
 
   return (
     <main className="page">
       <h1>Volunteer Registration</h1>
-      <p>Sign up to join our network of volunteers and provide essential resources.</p>
 
-      <form className="form-box" onSubmit={handleSubmit}>
-        <label>Full Name:</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" required />
+      <label>Language:</label>
+      <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+        <option value="en-US">English</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="es-ES">Spanish</option>
+        <option value="fr-FR">French</option>
+      </select>
 
-        <label>Email:</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required />
-
-        <label>Phone Number:</label>
-        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter your phone number" required />
+      <form onSubmit={handleSubmit} className="form-box">
+        {voiceInput("Full Name", name, setName, "Enter your name")}
+        {voiceInput("Email", email, setEmail, "Enter your email")}
+        {voiceInput("Phone Number", phone, setPhone, "Enter your phone")}
 
         <label>Available Resources:</label>
-        <div className="checkbox-group">
-          {["Clothing", "Food", "Water", "Medicine", "Safe Shelter", "Space", "Other"].map(r => (
+        <div className="resources">
+          {["Clothing","Food","Water","Medicine","Shelter","Other"].map((r) => (
             <label key={r}>
-              <input type="checkbox" value={r} checked={resources.includes(r)} onChange={handleCheckboxChange} /> {r}
+              <input type="checkbox" value={r} checked={resources.includes(r)} onChange={(e) => setResources(e.target.checked ? [...resources, r] : resources.filter(x=>x!==r))} /> {r}
             </label>
           ))}
         </div>
 
-        <label>Other Skills:</label>
-        <textarea value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="E.g., transport, medical aid, communication" />
+        {voiceInput("Other Skills", skills, setSkills, "E.g., medical aid, transport")}
 
         <label>Detected Location:</label>
-        <input type="text" value={`${location.lat}, ${location.lng}`} readOnly />
+        <input value={`${location.lat}, ${location.lng}`} readOnly />
 
-        <button type="submit">Join as Volunteer</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Submitting..." : "Join as Volunteer"}
+        </button>
       </form>
+
       <RecommendedContent />
+
+      <style>{`
+        .voice-input-wrapper { position: relative; margin-bottom: 1rem; }
+        input, textarea { width: 100%; padding: 0.5rem 3rem 0.5rem 0.5rem; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        .voice-buttons { position: absolute; top: 50%; transform: translateY(-50%); right: 5px; display: flex; gap: 5px; }
+        .voice-buttons button { border: none; background: none; cursor: pointer; font-size: 1.2rem; }
+        .resources label { display: inline-block; margin-right: 10px; }
+      `}</style>
     </main>
   );
 }
