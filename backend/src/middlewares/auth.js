@@ -1,17 +1,17 @@
-const jwt = require('jsonwebtoken');
+import jwt from "jsonwebtoken";
+const JWT_SECRET = "your_super_secret_key";
 
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+export const protect = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer "))
+    return res.status(401).json({ message: "No token provided" });
 
+  const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // Attach user info to request
     next();
   } catch (err) {
-    console.error('JWT verification failed:', err.message);
-    res.status(401).json({ message: 'Token is not valid' });
+    res.status(401).json({ message: "Token is invalid or expired" });
   }
 };
-
-module.exports = auth;
