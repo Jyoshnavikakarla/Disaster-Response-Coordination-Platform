@@ -1,40 +1,61 @@
-// src/components/RecommendedContent.jsx
 import { useEffect, useState } from "react";
 import { useAppContext } from "../AppContext.jsx";
+import Swal from "sweetalert2";
 
-export default function RecommendedContent() {
+const RecommendedContent = () => {
   const { loggedInUser } = useAppContext();
   const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
-    if (!loggedInUser) return;
+    if (!loggedInUser?._id && !loggedInUser?.id) return;
 
-    fetch(`http://localhost:5000/api/user/${loggedInUser.id}/recommendations`)
-      .then(res => res.json())
-      .then(data => setRecommendations(data.recommendations || []))
-      .catch(err => console.error("Failed to fetch recommendations:", err));
+    const fetchRecommendations = async () => {
+      try {
+        const userId = loggedInUser._id || loggedInUser.id;
+
+        const res = await fetch(`http://localhost:5000/api/user/${userId}/recommendations`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || "Failed to fetch recommendations");
+        }
+
+        const data = await res.json();
+        console.log("Recommendations fetched:", data.recommendations);
+        setRecommendations(Array.isArray(data.recommendations) ? data.recommendations : []);
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "Failed to fetch recommendations", "error");
+      }
+    };
+
+    fetchRecommendations();
   }, [loggedInUser]);
 
-  // Only render if there are recommendations
-  if (!loggedInUser || recommendations.length === 0) return null;
+  if (!recommendations || recommendations.length === 0) return null;
 
   return (
-  <div style={{
-    padding: "1rem",
-    background: "#f7f7f7",
-    borderTop: "1px solid #ccc"
-  }}>
-    <h4>Recommended for you:</h4>
-    <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-      {recommendations.map(page => (
-        <li key={page}>
-          <a href={`/${page}`} style={{ textDecoration: "none", color: "#0066cc" }}>
-            {page.charAt(0).toUpperCase() + page.slice(1)}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+    <div style={{ marginTop: "20px" }}>
+      <h3>Recommended for You</h3>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {recommendations.map((item, i) => (
+          <li
+            key={i}
+            style={{
+              padding: "8px",
+              background: "#f0f0f0",
+              marginBottom: "5px",
+              borderRadius: "5px",
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
-}
+export default RecommendedContent;

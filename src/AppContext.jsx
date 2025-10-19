@@ -7,13 +7,33 @@ export const AppProvider = ({ children }) => {
   const [victims, setVictims] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
 
-  // Load user from localStorage on app start
+  // Load user from backend using token on app start
   useEffect(() => {
-    const user = localStorage.getItem("loggedInUser");
     const token = localStorage.getItem("token");
-    if (user && token) {
-      setLoggedInUser(JSON.parse(user));
-    }
+    if (!token) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch user");
+
+        const data = await res.json();
+        setLoggedInUser(data.user); // ✅ ensure backend returns { user: {...} }
+        localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+      } catch (err) {
+        console.error("Error fetching logged-in user:", err);
+        setLoggedInUser(null);
+        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("token");
+      }
+    };
+
+    fetchUser();
   }, []);
 
   // Logout function

@@ -1,15 +1,13 @@
-// src/routes/volunteers.js
 import express from "express";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
+import Volunteer from "../models/Volunteer.js";
 
 const router = express.Router();
 
-// ------------------- AUTH MIDDLEWARE -------------------
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Unauthorized" });
-
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
@@ -18,7 +16,6 @@ const auth = (req, res, next) => {
   }
 };
 
-// ------------------- POST /api/volunteers -------------------
 router.post(
   "/",
   auth,
@@ -36,20 +33,11 @@ router.post(
     try {
       const { name, email, phone, resources, skills, lat, lng } = req.body;
 
-      const newVolunteer = {
-        name,
-        email,
-        phone,
-        resources,
-        skills: skills || "",
-        lat,
-        lng,
-        userId: req.user.id,
-        createdAt: new Date(),
-      };
+      const newVolunteer = await Volunteer.create({
+        name, email, phone, resources, skills, lat, lng, userId: req.user.id
+      });
 
-      // Save to DB (placeholder)
-      res.status(201).json({ _id: Date.now(), ...newVolunteer });
+      res.status(201).json(newVolunteer);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });

@@ -2,13 +2,16 @@
 import express from "express";
 import User from "../models/User.js";
 import Request from "../models/Request.js";
-import Activity from "../models/VolunteerActivity.js";
-import { protect } from "../middlewares/auth.js";
+import Activity from "../models/Volunteer.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+
+// Example usage
+
 
 const router = express.Router();
 
 // GET recommendations for a user
-router.get("/:userId", protect, async (req, res) => {
+router.get("/:userId", authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });

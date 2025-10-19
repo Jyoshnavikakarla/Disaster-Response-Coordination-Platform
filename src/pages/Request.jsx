@@ -10,7 +10,7 @@ export default function Request() {
   const [contact, setContact] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [language, setLanguage] = useState("en-US"); // default
+  const [language, setLanguage] = useState("en-US");
   const [location, setLocation] = useState({ lat: "", lng: "" });
 
   // Auto-detect location
@@ -22,18 +22,19 @@ export default function Request() {
         { enableHighAccuracy: true }
       );
     }
-     Swal.fire({
-    title: "🎧 & 🎤 Buttons Info",
-    html: `
-      <p><b>🎧 Hear:</b> Click this to listen to the question in the selected language.</p>
-      <p><b>🎤 Speak:</b> Click this to answer by speaking; your speech will be converted to text.</p>
-    `,
-    icon: "info",
-    confirmButtonText: "Got it!",
-    showCloseButton: true,
-  });
+    Swal.fire({
+      title: "🎧 & 🎤 Buttons Info",
+      html: `
+        <p><b>🎧 Hear:</b> Click to listen to the question in the selected language.</p>
+        <p><b>🎤 Speak:</b> Click to answer by speaking; your speech will be converted to text.</p>
+      `,
+      icon: "info",
+      confirmButtonText: "Got it!",
+      showCloseButton: true,
+    });
   }, []);
 
+  // ---------------- Speech Functions ----------------
   const speak = (text) => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = language;
@@ -50,10 +51,19 @@ export default function Request() {
     recognition.lang = language;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-    recognition.onresult = (e) => setter(e.results[0][0].transcript);
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      // Sanitize contact input to remove non-digit characters if the field is contact
+      if (setter === setContact) {
+        setter(text.replace(/\D/g, ""));
+      } else {
+        setter(text);
+      }
+    };
     recognition.start();
   };
 
+  // ---------------- Submit Form ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting) return;
@@ -65,6 +75,8 @@ export default function Request() {
       setSubmitting(false);
       return;
     }
+
+    // Validate fields
     if (!name || !contact || !details) {
       Swal.fire({ icon: "error", title: "Please fill all fields" });
       speak("Please fill all fields.");
@@ -72,10 +84,19 @@ export default function Request() {
       return;
     }
 
+    // Ensure contact is digits only and valid length
+    const sanitizedContact = contact.replace(/\D/g, "");
+    if (sanitizedContact.length < 10) {
+      Swal.fire({ icon: "error", title: "Invalid contact number" });
+      speak("Please enter a valid contact number.");
+      setSubmitting(false);
+      return;
+    }
+
     const token = localStorage.getItem("token");
     const newRequest = {
       name,
-      contact,
+      contact: sanitizedContact,
       details,
       location: `${location.lat},${location.lng}`,
       lat: location.lat,
@@ -106,10 +127,23 @@ export default function Request() {
     }
   };
 
+  // ---------------- Voice Input Component ----------------
   const voiceInput = (label, value, setter, placeholder) => (
     <div className="voice-input-wrapper">
       <label>{label}:</label>
-      <input value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} required />
+      <input
+        value={value}
+        onChange={(e) => {
+          // Sanitize contact input
+          if (setter === setContact) {
+            setter(e.target.value.replace(/\D/g, ""));
+          } else {
+            setter(e.target.value);
+          }
+        }}
+        placeholder={placeholder}
+        required
+      />
       <div className="voice-buttons">
         <button type="button" onClick={() => speak(label)}>🎧</button>
         <button type="button" onClick={() => listen(setter)}>🎤</button>

@@ -63,6 +63,15 @@ export default function Login() {
         />
         <button type="submit">Login</button>
       </form>
+      <p style={{ marginTop: "15px", textAlign: "center", color: "#555" }}>
+    🤔 Don’t have an account?{" "}
+    <span
+      onClick={() => navigate("/register")}
+      style={{ color: "#42A5F5", fontWeight: "bold", cursor: "pointer" }}
+    >
+      Sign up, fam! 🚀
+    </span>
+  </p>
     </main>
   );
 }

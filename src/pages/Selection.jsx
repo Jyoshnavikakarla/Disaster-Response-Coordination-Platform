@@ -9,14 +9,18 @@ export default function Selection() {
 
   // Track page visit for recommendations
   useEffect(() => {
-    if (loggedInUser) {
-      fetch("http://localhost:5000/api/user/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: loggedInUser.id, page: "selection" }),
-      }).catch((err) => console.error("Failed to record history:", err));
-    }
-  }, [loggedInUser]);
+  if (loggedInUser) {
+    fetch("http://localhost:5000/api/user/history", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({ page: "selection" }),
+    }).catch((err) => console.error("Failed to record history:", err));
+  }
+}, [loggedInUser]);
+
 
   return (
     <main className="page">

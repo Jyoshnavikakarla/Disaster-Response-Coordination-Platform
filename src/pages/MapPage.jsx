@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import { useAppContext } from "../AppContext.jsx";
 import RecommendedContent from "../components/RecommendedContent.jsx";
 
-// Custom icons
 const victimIcon = new L.Icon({
   iconUrl: "/victimIcon.jpg",
   iconSize: [30, 40],
@@ -21,23 +20,26 @@ const volunteerIcon = new L.Icon({
 
 export default function MapPage() {
   const { victims = [], volunteers = [], loggedInUser } = useAppContext();
-  const mapRef = useRef(null); // ✅ Persist map instance
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
 
-  // ---------------- Track page visit for recommendations ----------------
+  // Track page visit
   useEffect(() => {
     if (loggedInUser) {
       fetch("http://localhost:5000/api/user/history", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: loggedInUser.id, page: "map" }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ page: "map" }),
       }).catch((err) => console.error("Failed to record history:", err));
     }
   }, [loggedInUser]);
 
-  // ---------------- Initialize Leaflet Map ----------------
+  // Initialize Map
   useEffect(() => {
     if (!mapRef.current) {
-      // Initialize map only once
       mapRef.current = L.map("map", { zoomControl: false }).setView([20, 80], 5);
       L.control.zoom({ position: "topright" }).addTo(mapRef.current);
 
@@ -48,14 +50,11 @@ export default function MapPage() {
 
     const map = mapRef.current;
 
-    // Clear previous layers before adding new markers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Circle) {
-        map.removeLayer(layer);
-      }
-    });
+    // Remove previous markers
+    markersRef.current.forEach((m) => map.removeLayer(m));
+    markersRef.current = [];
 
-    // ---------------- Infection Zones ----------------
+    // Infection zones
     const infectionZones = [
       { coords: [28.7041, 77.1025], color: "red", popup: "High Infection - Delhi" },
       { coords: [19.076, 72.8777], color: "orange", popup: "Medium Infection - Mumbai" },
@@ -63,40 +62,34 @@ export default function MapPage() {
     ];
 
     infectionZones.forEach((zone) => {
-      L.circle(zone.coords, { color: zone.color, radius: 1000 })
-        .addTo(map)
-        .bindPopup(zone.popup);
+      const circle = L.circle(zone.coords, { color: zone.color, radius: 1000 }).addTo(map);
+      markersRef.current.push(circle);
+      circle.bindPopup(zone.popup);
     });
 
-    // ---------------- Victims ----------------
+    // Victims
     victims?.forEach(({ lat, lng, name, location }) => {
       if (lat && lng) {
-        L.marker([lat, lng], { icon: victimIcon })
-          .addTo(map)
-          .bindPopup(`<b>Victim:</b> ${name}<br/><b>Location:</b> ${location}`);
+        const marker = L.marker([lat, lng], { icon: victimIcon }).addTo(map);
+        marker.bindPopup(`<b>Victim:</b> ${name}<br/><b>Location:</b> ${location}`);
+        markersRef.current.push(marker);
       }
     });
 
-    // ---------------- Volunteers ----------------
+    // Volunteers
     volunteers?.forEach(({ lat, lng, name, resources }) => {
       if (lat && lng) {
-        L.marker([lat, lng], { icon: volunteerIcon })
-          .addTo(map)
-          .bindPopup(`<b>Volunteer:</b> ${name}<br/><b>Resources:</b> ${resources}`);
+        const marker = L.marker([lat, lng], { icon: volunteerIcon }).addTo(map);
+        marker.bindPopup(`<b>Volunteer:</b> ${name}<br/><b>Resources:</b> ${resources}`);
+        markersRef.current.push(marker);
       }
     });
-
-    // Optional cleanup: keep map instance but remove markers when component unmounts
-    return () => {
-      // Don't remove the map itself to prevent re-initialization issues
-      // Layers (markers/circles) are removed automatically next render
-    };
   }, [victims, volunteers]);
 
   return (
     <div style={{ position: "relative", height: "90vh", width: "100%" }}>
       <div id="map" style={{ height: "100%", width: "100%" }}></div>
-      <RecommendedContent /> {/* overlays only if recommendations exist */}
+      <RecommendedContent />
     </div>
   );
 }

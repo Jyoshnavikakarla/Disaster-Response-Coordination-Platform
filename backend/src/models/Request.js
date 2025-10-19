@@ -1,20 +1,15 @@
 // src/models/Request.js
 import mongoose from "mongoose";
 
-const RequestSchema = new mongoose.Schema(
-  {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    name: String,
-    location: String,
-    lat: Number,       // optional for map display
-    lng: Number,
-    contact: String,
-    details: String,
-    status: { type: String, default: "pending" }, // pending, completed, in-progress
-    role: String // victim or volunteer
-  },
-  { timestamps: true }
-);
+const requestSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  request: { type: String, required: true },
+  location: { type: String },
+  latitude: { type: Number },
+  longitude: { type: Number },
+  status: { type: String, enum: ["pending", "completed"], default: "pending" },
+  date: { type: Date, default: Date.now },
+}, { timestamps: true });
 
-const Request = mongoose.model("Request", RequestSchema);
+const Request = mongoose.model("Request", requestSchema);
 export default Request;

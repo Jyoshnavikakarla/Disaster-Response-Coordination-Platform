@@ -66,7 +66,15 @@ export default function Register() {
         <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
         <button type="submit">Register</button>
       </form>
-      <p>Already have an account? <a href="/login">Login</a></p>
+      <p style={{ marginTop: "15px", textAlign: "center", color: "#555" }}>
+        Already got an account?{" "}
+        <span
+          onClick={() => navigate("/login")}
+          style={{ color: "#42A5F5", fontWeight: "bold", cursor: "pointer" }}
+        >
+          Log in, fam! 🚀
+        </span>
+      </p>
     </main>
   );
 }

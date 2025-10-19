@@ -24,18 +24,19 @@ export default function Volunteer() {
         { enableHighAccuracy: true }
       );
     }
-     Swal.fire({
-    title: "🎧 & 🎤 Buttons Info",
-    html: `
-      <p><b>🎧 Hear:</b> Click this to listen to the question in the selected language.</p>
-      <p><b>🎤 Speak:</b> Click this to answer by speaking; your speech will be converted to text.</p>
-    `,
-    icon: "info",
-    confirmButtonText: "Got it!",
-    showCloseButton: true,
-  });
+    Swal.fire({
+      title: "🎧 & 🎤 Buttons Info",
+      html: `
+        <p><b>🎧 Hear:</b> Click to listen to the question in the selected language.</p>
+        <p><b>🎤 Speak:</b> Click to answer by speaking; your speech will be converted to text.</p>
+      `,
+      icon: "info",
+      confirmButtonText: "Got it!",
+      showCloseButton: true,
+    });
   }, []);
 
+  // ---------------- Speech Functions ----------------
   const speak = (text) => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = language;
@@ -52,10 +53,16 @@ export default function Volunteer() {
     recognition.lang = language;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-    recognition.onresult = (e) => setter(e.results[0][0].transcript);
+    recognition.onresult = (e) => {
+      let text = e.results[0][0].transcript;
+      // Sanitize phone input
+      if (setter === setPhone) text = text.replace(/\D/g, "");
+      setter(text);
+    };
     recognition.start();
   };
 
+  // ---------------- Submit Form ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting) return;
@@ -67,6 +74,7 @@ export default function Volunteer() {
       setSubmitting(false);
       return;
     }
+
     if (!name || !email || !phone) {
       Swal.fire({ icon: "error", title: "Please fill all required fields" });
       speak("Please fill all required fields.");
@@ -74,8 +82,25 @@ export default function Volunteer() {
       return;
     }
 
+    const sanitizedPhone = phone.replace(/\D/g, "");
+    if (sanitizedPhone.length < 10) {
+      Swal.fire({ icon: "error", title: "Invalid phone number" });
+      speak("Please enter a valid phone number.");
+      setSubmitting(false);
+      return;
+    }
+
     const token = localStorage.getItem("token");
-    const newVolunteer = { name, email, phone, resources, skills, lat: location.lat, lng: location.lng, userId: loggedInUser.id };
+    const newVolunteer = {
+      name,
+      email,
+      phone: sanitizedPhone,
+      resources,
+      skills,
+      lat: location.lat,
+      lng: location.lng,
+      userId: loggedInUser.id,
+    };
 
     try {
       if (token) {
@@ -100,10 +125,19 @@ export default function Volunteer() {
     }
   };
 
+  // ---------------- Voice Input Component ----------------
   const voiceInput = (label, value, setter, placeholder) => (
     <div className="voice-input-wrapper">
       <label>{label}:</label>
-      <input value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder} required />
+      <input
+        value={value}
+        onChange={(e) => {
+          if (setter === setPhone) setter(e.target.value.replace(/\D/g, ""));
+          else setter(e.target.value);
+        }}
+        placeholder={placeholder}
+        required
+      />
       <div className="voice-buttons">
         <button type="button" onClick={() => speak(label)}>🎧</button>
         <button type="button" onClick={() => listen(setter)}>🎤</button>
@@ -132,7 +166,18 @@ export default function Volunteer() {
         <div className="resources">
           {["Clothing","Food","Water","Medicine","Shelter","Other"].map((r) => (
             <label key={r}>
-              <input type="checkbox" value={r} checked={resources.includes(r)} onChange={(e) => setResources(e.target.checked ? [...resources, r] : resources.filter(x=>x!==r))} /> {r}
+              <input
+                type="checkbox"
+                value={r}
+                checked={resources.includes(r)}
+                onChange={(e) =>
+                  setResources(
+                    e.target.checked
+                      ? [...resources, r]
+                      : resources.filter(x => x !== r)
+                  )
+                }
+              /> {r}
             </label>
           ))}
         </div>
