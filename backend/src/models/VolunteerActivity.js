@@ -1,14 +1,13 @@
-// src/models/VolunteerActivity.js
+// backend/src/models/VolunteerActivity.js
 const mongoose = require("mongoose");
 
-const VolunteerActivitySchema = new mongoose.Schema({
-  volunteerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  task: String,
+const volunteerActivitySchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  skills: [String],
+  availability: String,
   location: String,
-  lat: Number,
-  lng: Number,
-  status: { type: String, default: "completed" },
-  date: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("VolunteerActivity", VolunteerActivitySchema);
+module.exports = mongoose.model("VolunteerActivity", volunteerActivitySchema);
