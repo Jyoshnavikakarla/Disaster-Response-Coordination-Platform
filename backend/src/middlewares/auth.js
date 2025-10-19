@@ -1,17 +1,29 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const Authority = require("../models/Authority");
 
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+const protect = async (req, res, next) => {
+  let token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "No token provided" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+
+    if (decoded.role === "authority") {
+      req.user = await Authority.findById(decoded.id).select("-password");
+    } else {
+      req.user = await User.findById(decoded.id).select("-password");
+    }
+
     next();
   } catch (err) {
-    console.error('JWT verification failed:', err.message);
-    res.status(401).json({ message: 'Token is not valid' });
+    res.status(401).json({ message: "Invalid token" });
   }
 };
 
-module.exports = auth;
+const authorize = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) return res.status(403).json({ message: "Forbidden" });
+  next();
+};
+
+module.exports = { protect, authorize };
