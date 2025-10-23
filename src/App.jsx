@@ -12,7 +12,7 @@ const Register = lazy(() => import("./pages/Register"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const Request = lazy(() => import("./pages/Request"));
 const Volunteer = lazy(() => import("./pages/Volunteer"));
-const Authority = lazy(() => import("./pages/Authority"));
+const Authority = lazy(() => import("./pages/AuthorityDashboard"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const Selection = lazy(() => import("./pages/Selection"));

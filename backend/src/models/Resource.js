@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const ResourceRequestSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -12,4 +12,4 @@ const ResourceRequestSchema = new mongoose.Schema({
   status: { type: String, default: "Pending" }
 }, { timestamps: true });
 
-export default mongoose.model("ResourceRequest", ResourceRequestSchema);
+module.exports=  mongoose.model("ResourceRequest", ResourceRequestSchema);

@@ -1,7 +1,7 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import { body, validationResult } from "express-validator";
-import Volunteer from "../models/Volunteer.js";
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const { body, validationResult } =require( "express-validator");
+const Volunteer =require( "../models/Volunteer.js");
 
 const router = express.Router();
 
@@ -45,4 +45,4 @@ router.post(
   }
 );
 
-export default router;
+module.exports= router;

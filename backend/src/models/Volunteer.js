@@ -1,5 +1,5 @@
 // src/models/Volunteer.js
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const volunteerSchema = new mongoose.Schema({
   volunteerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,4 +12,4 @@ const volunteerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const Volunteer = mongoose.model("Volunteer", volunteerSchema);
-export default Volunteer;
+module.exports=  Volunteer;

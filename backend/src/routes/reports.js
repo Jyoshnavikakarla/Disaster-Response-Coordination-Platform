@@ -1,6 +1,6 @@
 // src/routes/reports.js
-import express from "express";
-import Report from "../models/Report.js";
+const express = require("express");
+const Report =require("../models/Report.js");
 
 const router = express.Router();
 
@@ -15,4 +15,4 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-export default router;
+module.exports= router;
