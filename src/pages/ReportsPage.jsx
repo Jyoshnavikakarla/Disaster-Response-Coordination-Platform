@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "./user-dashboard.css"; // Reuses your dashboard styles
+import "./user-dashboard.css";
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -11,6 +11,7 @@ const ReportsPage = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const handleStatusChange = async (newStatus) => {
     try {
@@ -19,14 +20,18 @@ const ReportsPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+
       if (!res.ok) throw new Error("Failed to update status");
       const updatedReport = await res.json();
+
       setReport(updatedReport);
-      alert("✅ Status updated successfully!");
+      setSelectedStatus(newStatus);
+
+      alert(`✅ Status updated to "${newStatus}" successfully!`);
       navigate("/dashboard", { state: { refresh: true } });
     } catch (err) {
       console.error(err.message);
-      alert("Failed to update status");
+      alert("❌ Failed to update status");
     }
   };
 
@@ -37,17 +42,20 @@ const ReportsPage = () => {
         setLoading(false);
         return;
       }
+
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`${BACKEND_URL}/api/reports/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) {
-          if (res.status === 404) throw new Error("Report not found");
-          throw new Error("Failed to fetch report");
-        }
+
+        if (!res.ok) throw new Error("Failed to fetch report");
+
         const data = await res.json();
-        setReport(data.report || data);
+        const fetchedReport = data.report || data;
+
+        setReport(fetchedReport);
+        setSelectedStatus(fetchedReport.status || "Pending");
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -55,6 +63,7 @@ const ReportsPage = () => {
         setLoading(false);
       }
     };
+
     fetchReport();
   }, [id]);
 
@@ -87,10 +96,30 @@ const ReportsPage = () => {
           color: "#fff",
           boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
           marginBottom: "2rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <h1 style={{ marginBottom: "0.3rem" }}>📋 Report Details</h1>
-        <p style={{ opacity: "0.9" }}>Detailed information and actions for this disaster report.</p>
+        <div>
+          <h1 style={{ marginBottom: "0.3rem" }}>📋 Report Details</h1>
+          <p style={{ opacity: "0.9" }}>Detailed information and actions for this disaster report.</p>
+        </div>
+        <button
+          onClick={() => alert("📄 PDF Export coming soon!")}
+          style={{
+            backgroundColor: "#27ae60",
+            color: "#fff",
+            padding: "10px 16px",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+          }}
+        >
+          📄 Export Report
+        </button>
       </div>
 
       {/* Report Details Card */}
@@ -112,103 +141,92 @@ const ReportsPage = () => {
             borderBottom: "3px solid #3498db",
             paddingBottom: "0.5rem",
             marginBottom: "1.5rem",
+            textAlign: "center",
           }}
         >
           {report.title || "Untitled Report"}
         </h2>
 
-        <div className="report-details">
-          <p>
-            <strong>Description:</strong> {report.description || "No description provided."}
-          </p>
-          <p>
-            <strong>Location:</strong> {report.location || "Not specified"}
-          </p>
-          <p>
-            <strong>Created At:</strong>{" "}
-            {new Date(report.createdAt).toLocaleString() || "N/A"}
-          </p>
+        <div className="report-details" style={{ lineHeight: "1.8", fontSize: "1.05rem" }}>
+          <p><strong>Description:</strong> {report.description || "No description provided."}</p>
+          <p><strong>Location:</strong> {report.location || "Not specified"}</p>
+          <p><strong>Created At:</strong> {new Date(report.createdAt).toLocaleString() || "N/A"}</p>
 
-          <p>
-            <strong>Status:</strong>{" "}
-            <select
-              value={report.status || "Pending"}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              style={{
-                marginLeft: "10px",
-                padding: "6px 10px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-                backgroundColor:
-                  report.status === "Completed"
-                    ? "#b7dfb6"
-                    : report.status === "In Progress"
-                    ? "#fceabb"
-                    : "#fbc9cf",
-                transition: "0.3s",
-              }}
-            >
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </p>
+          <p><strong>Status:</strong></p>
+          <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+            {["Pending", "In Progress", "Completed"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setSelectedStatus(status)}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  background:
+                    status === selectedStatus
+                      ? status === "Completed"
+                        ? "#6ee7b7"
+                        : status === "In Progress"
+                        ? "#fcd34d"
+                        : "#fca5a5"
+                      : "#e5e7eb",
+                  color: status === selectedStatus ? "#000" : "#555",
+                  transition: "all 0.2s",
+                  boxShadow:
+                    status === selectedStatus
+                      ? "0 4px 8px rgba(0,0,0,0.2)"
+                      : "0 2px 4px rgba(0,0,0,0.1)",
+                }}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Decorative Divider */}
         <div
           style={{
             height: "2px",
-            background:
-              "linear-gradient(90deg, rgba(52,152,219,1) 0%, rgba(46,204,113,1) 100%)",
-            margin: "1.5rem 0",
+            background: "linear-gradient(90deg, rgba(52,152,219,1) 0%, rgba(46,204,113,1) 100%)",
+            margin: "1.8rem 0",
           }}
         ></div>
 
-        {/* Quick Actions */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "20px",
-            marginTop: "1.5rem",
-          }}
-        >
+        {/* Bottom Buttons */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
           <button
-            className="save-btn"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => handleStatusChange(selectedStatus)}
             style={{
-              backgroundColor: "#4b7bec",
-              color: "white",
-              padding: "10px 18px",
-              borderRadius: "10px",
+              backgroundColor: "#3498db",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: "12px",
               border: "none",
               cursor: "pointer",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-              transition: "transform 0.2s",
+              fontWeight: "bold",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
           >
-            ⬅ Back to Dashboard
+            ✅ Submit
           </button>
 
           <button
-            onClick={() => alert("PDF Export coming soon!")}
+            onClick={() => navigate("/dashboard")}
             style={{
-              backgroundColor: "#27ae60",
-              color: "white",
-              padding: "10px 18px",
-              borderRadius: "10px",
+              backgroundColor: "#555",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: "12px",
               border: "none",
               cursor: "pointer",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-              transition: "transform 0.2s",
+              fontWeight: "bold",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
           >
-            📄 Export Report
+            ⬅ Back to Dashboard
           </button>
         </div>
       </div>
