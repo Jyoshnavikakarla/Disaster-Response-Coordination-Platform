@@ -30,31 +30,6 @@ const UserDashboard = () => {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
 
-  // Fetch weather info
-  const handleFetchWeather = async () => {
-    if (!city.trim()) return alert("Please enter a city name!");
-    try {
-      const apiKey = "f82f0d132424dc14d79f41301a41f1cd";
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
-      );
-      const data = await res.json();
-      if (data.cod === 200) {
-        setWeather({
-          name: data.name,
-          temp: data.main.temp,
-          desc: data.weather[0].description,
-          icon: `http://openweathermap.org/img/wn/${data.weather[0].icon}.png`,
-        });
-      } else {
-        alert("City not found!");
-      }
-    } catch (err) {
-      console.error("Weather fetch failed:", err);
-      alert("Failed to fetch weather. Try again later.");
-    }
-  };
-
   // Fetch dashboard data
   const fetchDashboard = async () => {
     const token = localStorage.getItem("token");
@@ -65,7 +40,6 @@ const UserDashboard = () => {
       });
       if (!dashRes.ok) throw new Error("Failed to fetch dashboard data");
       const dashData = await dashRes.json();
-
       setUser(dashData.user || {});
       setStats({
         totalActions:
@@ -77,7 +51,6 @@ const UserDashboard = () => {
         messages: dashData.messages || 0,
       });
       setRequests(dashData.recentRequests || []);
-      console.log("🔄 Dashboard refreshing...");
     } catch (err) {
       console.error("Error loading dashboard:", err);
     }
@@ -87,7 +60,6 @@ const UserDashboard = () => {
     fetchDashboard();
   }, [navigate]);
 
-  // ✅ Auto refresh after report update
   useEffect(() => {
     if (location.state?.refresh) {
       fetchDashboard();
@@ -95,38 +67,29 @@ const UserDashboard = () => {
     }
   }, [location.state]);
 
-  // Profile edit
-  const handleProfileEdit = async () => {
+  // Update status directly from dashboard
+  const handleStatusUpdate = async (reportId, newStatus) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return alert("⚠️ Please log in again");
-      const updated = {
-        name: prompt("Enter new name:", user.name),
-        email: prompt("Enter new email:", user.email),
-        location: prompt("Enter new location:", user.location),
-        avatar: prompt("Enter new avatar URL:", user.avatar),
-      };
-      const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+      const res = await fetch(`${BACKEND_URL}/api/reports/${reportId}/status`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updated),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-        alert("✅ Profile updated successfully!");
-      } else {
-        alert("❌ " + (data.message || "Error updating profile"));
-      }
+
+      if (!res.ok) throw new Error("Failed to update status");
+      const updatedReport = await res.json();
+
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.reportId === reportId ? { ...r, status: updatedReport.status } : r
+        )
+      );
     } catch (err) {
-      console.error("Profile update failed:", err);
+      console.error(err.message);
+      alert("Failed to update status");
     }
   };
 
-  // Logout
   const handleLogout = async () => {
     const token = localStorage.getItem("token");
     await fetch(`${BACKEND_URL}/api/user/logout`, {
@@ -137,44 +100,6 @@ const UserDashboard = () => {
     window.location.href = "/login";
   };
 
-  // Charts
-  const doughnutData = {
-    labels: ["Pending", "Resolved", "Ongoing"],
-    datasets: [
-      {
-        data: [stats.pending, stats.resolved, 3],
-        backgroundColor: ["#fbc9cf", "#b7dfb6", "#fceabb"],
-        borderWidth: 2,
-        borderColor: "#fff",
-      },
-    ],
-  };
-
-  const barData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        label: "User Activity",
-        data: [15, 25, 18, 30, 22, 35, 28],
-        backgroundColor: "rgba(113, 180, 255, 0.6)",
-        borderColor: "rgba(41, 128, 185, 0.9)",
-        borderWidth: 1,
-        borderRadius: 8,
-      },
-    ],
-  };
-
-  const barOptions = {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    animation: { duration: 1500, easing: "easeInOutQuart" },
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, ticks: { stepSize: 10 } },
-    },
-  };
-
-  // ✅ helper for colored status chips
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
       case "completed":
@@ -190,7 +115,7 @@ const UserDashboard = () => {
 
   return (
     <div className="user-dashboard-container">
-      {/* Profile Section */}
+      {/* Profile */}
       <div className="user-profile-section">
         <div className="profile-info">
           <img
@@ -204,7 +129,7 @@ const UserDashboard = () => {
             <p>{user.role || "User"}</p>
             <p>{user.location || "Loading..."}</p>
             <div className="profile-btns">
-              <button onClick={handleProfileEdit}>Edit Profile</button>
+              <button onClick={() => alert("Profile editing coming soon!")}>Edit Profile</button>
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
@@ -238,7 +163,17 @@ const UserDashboard = () => {
         <div className="chart-card">
           <h4>Request Status</h4>
           <Doughnut
-            data={doughnutData}
+            data={{
+              labels: ["Pending", "Resolved", "Ongoing"],
+              datasets: [
+                {
+                  data: [stats.pending, stats.resolved, 3],
+                  backgroundColor: ["#fbc9cf", "#b7dfb6", "#fceabb"],
+                  borderWidth: 2,
+                  borderColor: "#fff",
+                },
+              ],
+            }}
             options={{ cutout: "65%", radius: "70%", maintainAspectRatio: false }}
             height={250}
             width={250}
@@ -246,57 +181,31 @@ const UserDashboard = () => {
         </div>
         <div className="chart-card">
           <h4>User Activity Over Time</h4>
-          <Bar data={barData} options={barOptions} />
-        </div>
-      </section>
-
-      {/* Weather */}
-      <section className="insights-section">
-        <h4>Smart Insights</h4>
-        <div style={{ marginBottom: "12px" }}>
-          <input
-            type="text"
-            placeholder="Enter city name"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            style={{
-              padding: "8px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginRight: "8px",
-              width: "180px",
+          <Bar
+            data={{
+              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+              datasets: [
+                {
+                  label: "User Activity",
+                  data: [15, 25, 18, 30, 22, 35, 28],
+                  backgroundColor: "rgba(113, 180, 255, 0.6)",
+                  borderColor: "rgba(41, 128, 185, 0.9)",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: { legend: { display: false } },
+              animation: { duration: 1500, easing: "easeInOutQuart" },
+              scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, ticks: { stepSize: 10 } },
+              },
             }}
           />
-          <button
-            onClick={handleFetchWeather}
-            style={{
-              padding: "8px 14px",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: "#4b7bec",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Get Weather
-          </button>
         </div>
-        {weather ? (
-          <p>
-            🌤️ <strong>{weather.name}</strong>: {weather.temp}°C, {weather.desc}{" "}
-            <img
-              src={weather.icon}
-              alt={weather.desc}
-              style={{
-                width: "35px",
-                verticalAlign: "middle",
-                marginLeft: "8px",
-              }}
-            />
-          </p>
-        ) : (
-          <p>Enter a city to get real-time weather insights 🌍</p>
-        )}
       </section>
 
       {/* Request History */}
@@ -317,10 +226,24 @@ const UserDashboard = () => {
                 <tr key={req._id}>
                   <td>{req.type || "Flood"}</td>
                   <td>{req.date || "2025-09-10"}</td>
-                  <td>
+                  <td className="status-cell">
                     <span className={`status-chip ${getStatusClass(req.status)}`}>
-                      {req.status || "Resolved"}
+                      {req.status || "Pending"}
                     </span>
+                    {/* Hover dropdown */}
+                    {req.reportId && (
+                      <select
+                        className="status-dropdown"
+                        value={req.status}
+                        onChange={(e) =>
+                          handleStatusUpdate(req.reportId, e.target.value)
+                        }
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                    )}
                   </td>
                   <td>
                     {req.reportId ? (
