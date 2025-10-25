@@ -111,25 +111,27 @@ router.get("/:userId/requests", protect, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-// Save user history
+// ✅ Record user history
 router.post("/history", protect, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { page } = req.body; // page visited
+    const { page } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!page) {
+      return res.status(400).json({ message: "Page is required" });
+    }
 
-    if (!user.history) user.history = []; // make sure history array exists
-    user.history.push({ page, date: new Date() });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    user.history.push(page);
     await user.save();
-    res.json({ message: "History updated", history: user.history });
+
+    res.status(200).json({ message: "History recorded successfully" });
   } catch (err) {
-    console.error("Error saving history:", err);
-    res.status(500).json({ message: "Failed to save history" });
+    console.error("❌ Error saving history:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
-
-
 module.exports = router;
