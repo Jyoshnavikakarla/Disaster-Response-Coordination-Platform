@@ -13,9 +13,10 @@ const RecommendedContent = () => {
       try {
         const userId = loggedInUser._id || loggedInUser.id;
 
-        const res = await fetch(`http://localhost:5000/api/user/${userId}/recommendations`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await fetch(`http://localhost:5000/api/recommendations/${userId}`, {
+  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+});
+
 
         if (!res.ok) {
           const errText = await res.text();
