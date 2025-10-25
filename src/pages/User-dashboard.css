@@ -397,4 +397,93 @@ form input {
 .status-red {
   background-color: #e74c3c;
 }
+.status-cell {
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+}
+
+.status-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 4px;
+  font-size: 13px;
+  z-index: 10;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-cell:hover .status-dropdown {
+  display: block;
+}
+
+.status-chip {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.status-green {
+  background-color: #b7dfb6;
+  color: #145a32;
+}
+
+.status-yellow {
+  background-color: #fceabb;
+  color: #a87d00;
+}
+
+.status-red {
+  background-color: #fbc9cf;
+  color: #a93226;
+}
+.status-cell {
+  position: relative;
+}
+
+.status-chip {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.status-red {
+  background-color: #fbc9cf;
+  color: #c0392b;
+}
+.status-yellow {
+  background-color: #fceabb;
+  color: #f39c12;
+}
+.status-green {
+  background-color: #b7dfb6;
+  color: #27ae60;
+}
+
+.status-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+  background: white;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Show dropdown on hover */
+.status-cell:hover .status-dropdown {
+  display: block;
+}
 
