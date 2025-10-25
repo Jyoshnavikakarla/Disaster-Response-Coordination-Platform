@@ -16,6 +16,8 @@ const Authority = lazy(() => import("./pages/AuthorityDashboard"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const Selection = lazy(() => import("./pages/Selection"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage.jsx"));
+
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -60,6 +62,12 @@ function App() {
               loggedInUser ? <Volunteer /> : <Navigate to="/login" replace />
             }
           />
+         <Route
+  path="/reports/:id"
+  element={loggedInUser ? <ReportsPage /> : <Navigate to="/login" replace />}
+/>
+
+
 
           {/* Authority only */}
           <Route
