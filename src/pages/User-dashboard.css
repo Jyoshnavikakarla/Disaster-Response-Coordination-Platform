@@ -336,3 +336,42 @@ form input {
 .cancel-btn:hover {
   background: #aaa;
 }
+/* Smooth Fade-In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner for loading */
+.loading-spinner {
+  width: 45px;
+  height: 45px;
+  border: 5px solid #eee;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Report details spacing */
+.report-details p {
+  margin: 0.7rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.report-details strong {
+  color: #2c3e50;
+}
