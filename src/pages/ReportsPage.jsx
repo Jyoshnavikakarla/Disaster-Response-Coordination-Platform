@@ -11,24 +11,27 @@ const ReportsPage = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("Pending");
 
   const handleStatusChange = async (newStatus) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Please login again");
+
       const res = await fetch(`${BACKEND_URL}/api/reports/${report._id}/status`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!res.ok) throw new Error("Failed to update status");
+
       const updatedReport = await res.json();
-
-      setReport(updatedReport);
-      setSelectedStatus(newStatus);
-
-      alert(`✅ Status updated to "${newStatus}" successfully!`);
-      navigate("/dashboard", { state: { refresh: true } });
+      setReport((prev) => ({ ...prev, status: updatedReport.status }));
+      alert("✅ Status updated successfully!");
     } catch (err) {
       console.error(err.message);
       alert("❌ Failed to update status");
@@ -87,7 +90,7 @@ const ReportsPage = () => {
 
   return (
     <div className="user-dashboard-container" style={{ padding: "2rem 3rem" }}>
-      {/* Header Section */}
+      {/* Header */}
       <div
         style={{
           background: "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)",
@@ -122,7 +125,7 @@ const ReportsPage = () => {
         </button>
       </div>
 
-      {/* Report Details Card */}
+      {/* Report Card */}
       <div
         className="edit-profile-card"
         style={{
@@ -186,7 +189,7 @@ const ReportsPage = () => {
           </div>
         </div>
 
-        {/* Decorative Divider */}
+        {/* Divider */}
         <div
           style={{
             height: "2px",
@@ -195,7 +198,7 @@ const ReportsPage = () => {
           }}
         ></div>
 
-        {/* Bottom Buttons */}
+        {/* Action Buttons */}
         <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
           <button
             onClick={() => handleStatusChange(selectedStatus)}
