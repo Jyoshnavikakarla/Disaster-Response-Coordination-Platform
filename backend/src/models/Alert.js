@@ -1,5 +1,4 @@
-// Alert.js
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const alertSchema = new mongoose.Schema(
   {
@@ -10,5 +9,6 @@ const alertSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Alert = mongoose.model('Alert', alertSchema);
-export default Alert;
+const Alert = mongoose.model("Alert", alertSchema);
+
+module.exports = Alert;
