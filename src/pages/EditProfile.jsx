@@ -70,7 +70,9 @@ const EditProfile = () => {
 
       const data = await res.json();
       alert("✅ Profile updated successfully!");
-      navigate("/dashboard");
+    // in EditProfile.jsx
+navigate("/dashboard", { state: { updated: true } });
+
     } catch (err) {
       console.error(err);
       alert(`❌ ${err.message}`);
