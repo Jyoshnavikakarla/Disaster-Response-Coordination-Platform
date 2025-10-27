@@ -33,7 +33,7 @@ export default function Login() {
         icon: "success",
         showConfirmButton: false,
         timer: 2000,
-      }).then(() => navigate("/dashboard")); // redirect to dashboard
+      }).then(() => navigate("/", { replace: true })); // redirect to dashboard
     } catch (err) {
       Swal.fire({
         title: "Login failed",
