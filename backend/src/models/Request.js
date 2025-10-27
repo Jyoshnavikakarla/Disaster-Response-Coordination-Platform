@@ -1,5 +1,5 @@
 // src/models/Request.js
-import mongoose from "mongoose";
+const mongoose =require ("mongoose");
 
 const requestSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,4 +12,4 @@ const requestSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const Request = mongoose.model("Request", requestSchema);
-export default Request;
+module.exports= Request;
