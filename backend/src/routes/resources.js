@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Resource = require("../models/Resource");
+const Resource = require("../models/ResourceRequest");
 const { protect } = require("../middlewares/auth");
 
 // Create a resource
