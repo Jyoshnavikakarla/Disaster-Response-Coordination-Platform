@@ -12,18 +12,25 @@ export default function AlertsPage() {
 
   // ---------------- Fetch alerts from backend ----------------
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/alerts");
-        if (!res.ok) throw new Error("Failed to fetch alerts");
-        const data = await res.json();
-        setAlerts(data);
-      } catch (err) {
-        console.error("Failed to fetch alerts:", err);
-      }
-    };
-    fetchAlerts();
-  }, []);
+  const fetchAlerts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/alerts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error(`Failed to fetch alerts: ${res.status}`);
+      const data = await res.json();
+      setAlerts(data);
+    } catch (err) {
+      console.error("Failed to fetch alerts:", err);
+      Swal.fire("Error", "Failed to fetch alerts. Make sure you are logged in.", "error");
+    }
+  };
+
+  fetchAlerts();
+}, []);
+
 
   // ---------------- Handle chat message submission ----------------
   const handleChatSubmit = (e) => {

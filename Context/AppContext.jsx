@@ -61,11 +61,44 @@ function AppProvider({ children }) {
   };
 
   // ---------------- Initial Fetch ----------------
+   // ---------------- Initial Fetch ----------------
   useEffect(() => {
     fetchVictims();
     fetchVolunteers();
     fetchAlerts();
   }, []);
+
+  // ---------------- Fetch Logged-in User (Skip for Guests) ----------------
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token"); // check if user logged in
+      if (!token) {
+        console.log("Guest user detected — skipping /api/auth/me fetch");
+        return; // don’t call backend for guests
+      }
+
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.error("Failed to fetch user info");
+          return;
+        }
+
+        const data = await response.json();
+        setLoggedInUser(data);
+      } catch (error) {
+        console.error("Error fetching logged-in user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
 
   return (
     React.createElement(

@@ -9,7 +9,10 @@ const ResourceRequestSchema = new mongoose.Schema({
   lng: { type: Number },
   role: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  status: { type: String, default: "Pending" }
+  status: { type: String, default: "Pending" },
+  reportId: { type: mongoose.Schema.Types.ObjectId, ref: "Report" }
 }, { timestamps: true });
 
-module.exports = mongoose.model("ResourceRequest", ResourceRequestSchema);
+
+
+module.exports=  mongoose.model("ResourceRequest", ResourceRequestSchema);

@@ -2,21 +2,20 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { protect } = require("../middlewares/auth");
 const User = require("../models/User");
 const Authority = require("../models/Authority");
 
-// 🟢 POST /api/auth/register
+// ---------------- REGISTER ----------------
 router.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // Check if user already exists in either collection
     const existingUser =
       (await User.findOne({ email })) || (await Authority.findOne({ email }));
     if (existingUser)
       return res.status(400).json({ message: "Email already registered" });
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let newUser;
@@ -28,7 +27,6 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
-    // Create JWT token
     const token = jwt.sign(
       { id: newUser._id, role: role || "user" },
       process.env.JWT_SECRET,
@@ -45,7 +43,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// 🟡 Existing login route
+// ---------------- LOGIN ----------------
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -75,6 +73,18 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ---------------- GET /api/auth/me ----------------
+router.get("/me", protect, async (req, res) => {
+  try {
+    if (!req.user)
+      return res.status(404).json({ message: "User not found" });
+    res.json({ user: req.user });
+  } catch (err) {
+    console.error("Error in /me route:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

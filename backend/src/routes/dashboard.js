@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middlewares/auth"); // your auth middleware
-const Request = require("../models/Request");
+const Resource = require("../models/Resource");
 const User = require("../models/User"); // import User model
 
 // ------------------- Existing route: GET /api/dashboard/user -------------------
@@ -9,12 +9,15 @@ router.get("/user", protect, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const allRequests = await Request.find({ userId });
+    // Fetch all requests for this user from Resource collection
+    const allRequests = await Resource.find({ userId }).sort({ createdAt: -1 });
 
-    const resolved = allRequests.filter(r => r.status === "Resolved").length;
-    const pending = allRequests.filter(r => r.status === "Pending").length;
-    const ongoing = allRequests.filter(r => r.status === "Ongoing").length;
+    // Calculate stats
+    const resolved = allRequests.filter(r => r.status.toLowerCase() === "completed").length;
+    const pending = allRequests.filter(r => r.status.toLowerCase() === "pending").length;
+    const ongoing = allRequests.filter(r => r.status.toLowerCase() === "ongoing").length;
 
+    // Group by day (for charts)
     const grouped = {};
     allRequests.forEach(r => {
       const day = new Date(r.createdAt).toLocaleDateString("en-US", { weekday: "short" });
@@ -22,22 +25,32 @@ router.get("/user", protect, async (req, res) => {
     });
     const barData = Object.entries(grouped).map(([name, requests]) => ({ name, requests }));
 
-    const recentRequests = allRequests
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 5)
-      .map(r => ({
-        type: r.type,
-        date: r.createdAt,
-        status: r.status,
-        location: r.location || "N/A",
-      }));
+    // Prepare recent requests list
+// Assuming you get allRequests from backend
+console.log("All requests from backend:", allRequests);
 
+const recentRequests = allRequests.slice(0, 5).map(r => ({
+  _id: r._id,          // request id
+  type: r.details || "General",
+  date: r.createdAt,
+  status: r.status,
+  location: r.location || "N/A",
+  reportId: r.reportId, 
+}));
+
+console.log("Mapped recentRequests:", recentRequests);
+
+
+
+
+    // Send data to frontend
     res.json({ resolved, pending, ongoing, barData, recentRequests });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching user dashboard:", err);
     res.status(500).json({ message: "Failed to fetch dashboard data" });
   }
 });
+
 
 // ------------------- NEW route: GET /api/dashboard/stats -------------------
 router.get("/stats", protect, async (req, res) => {

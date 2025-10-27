@@ -1,6 +1,6 @@
 const express = require("express");
 const Report = require("../models/Report.js");
-const Resource = require("../models/ResourceRequest.js");
+const Resource = require("../models/Resource.js");
 const { protect } = require("../middlewares/auth.js");
 const router = express.Router();
 const { getReportById } = require("../reportcontroller.js");

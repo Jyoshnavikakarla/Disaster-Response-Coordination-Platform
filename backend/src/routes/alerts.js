@@ -6,10 +6,10 @@ const { protect } = require("../middlewares/auth");
 // Create alert
 router.post("/", protect, async (req, res) => {
   try {
-    const { title, description, location } = req.body;
-    const alert = new Alert({ title, description, location, userId: req.user.id });
+    const { type, message } = req.body; // match frontend
+    const alert = new Alert({ type, message, userId: req.user.id });
     await alert.save();
-    res.status(201).json({ message: "Alert created", alert });
+    res.status(201).json(alert);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -19,7 +19,7 @@ router.post("/", protect, async (req, res) => {
 // Get all alerts
 router.get("/", protect, async (req, res) => {
   try {
-    const alerts = await Alert.find();
+    const alerts = await Alert.find().sort({ createdAt: -1 });
     res.json(alerts);
   } catch (err) {
     console.error(err);
@@ -27,4 +27,4 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router; 

@@ -1,11 +1,10 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const { body, validationResult } = require("express-validator");
-const Volunteer = require("../models/Volunteer.js");
+const { body, validationResult } =require( "express-validator");
+const Volunteer =require( "../models/Volunteer.js");
 
 const router = express.Router();
 
-// Auth middleware
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Unauthorized" });
@@ -35,14 +34,7 @@ router.post(
       const { name, email, phone, resources, skills, lat, lng } = req.body;
 
       const newVolunteer = await Volunteer.create({
-        name,
-        email,
-        phone,
-        resources,
-        skills,
-        lat,
-        lng,
-        userId: req.user.id,
+        name, email, phone, resources, skills, lat, lng, userId: req.user.id
       });
 
       res.status(201).json(newVolunteer);
@@ -53,4 +45,4 @@ router.post(
   }
 );
 
-module.exports = router;
+module.exports= router;
