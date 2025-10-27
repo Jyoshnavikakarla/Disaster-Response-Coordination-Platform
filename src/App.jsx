@@ -12,7 +12,7 @@ const Register = lazy(() => import("./pages/Register"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const Request = lazy(() => import("./pages/Request"));
 const Volunteer = lazy(() => import("./pages/Volunteer"));
-const Authority = lazy(() => import("./pages/Authority"));
+const Authority = lazy(() => import("./pages/AuthorityDashboard"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const Selection = lazy(() => import("./pages/Selection"));
@@ -20,6 +20,14 @@ const Selection = lazy(() => import("./pages/Selection"));
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { loggedInUser } = useAppContext();
+
+  // Inline ProtectedRoute component
+  const ProtectedRoute = ({ children, requiredRole }) => {
+    if (!loggedInUser) return <Navigate to="/login" replace />;
+    if (requiredRole && loggedInUser.role !== requiredRole)
+      return <Navigate to="/" replace />;
+    return children;
+  };
 
   return (
     <>
@@ -37,27 +45,29 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected */}
+          {/* Protected routes */}
           <Route
             path="/dashboard"
             element={
-              loggedInUser ? (
+              <ProtectedRoute>
                 <UserDashboard />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/request"
             element={
-              loggedInUser ? <Request /> : <Navigate to="/login" replace />
+              <ProtectedRoute>
+                <Request />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/volunteer"
             element={
-              loggedInUser ? <Volunteer /> : <Navigate to="/login" replace />
+              <ProtectedRoute>
+                <Volunteer />
+              </ProtectedRoute>
             }
           />
 
@@ -65,11 +75,9 @@ function App() {
           <Route
             path="/authority"
             element={
-              loggedInUser?.role === "authority" ? (
+              <ProtectedRoute requiredRole="authority">
                 <Authority />
-              ) : (
-                <Navigate to="/" />
-              )
+              </ProtectedRoute>
             }
           />
 
