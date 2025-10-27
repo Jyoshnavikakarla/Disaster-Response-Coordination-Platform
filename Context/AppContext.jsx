@@ -1,16 +1,18 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import * as mockApi from "../API/mockAPI.js";
+const React = require("react");
+const { createContext, useContext, useState, useEffect } = React;
+const mockApi = require("../API/mockAPI.js");
 
 const AppContext = createContext();
-export const useAppContext = () => useContext(AppContext);
 
-export function AppProvider({ children }) {
+const useAppContext = () => useContext(AppContext);
+
+function AppProvider({ children }) {
   // ---------------- Users ----------------
-  const [users, setUsers] = useState([]); // store registered users
+  const [users, setUsers] = useState([]); 
   const [loggedInUser, setLoggedInUser] = useState(null);
 
   const addUser = async (user) => {
-    setUsers((prev) => [...prev, user]); // add new user to local state
+    setUsers((prev) => [...prev, user]);
   };
 
   // ---------------- Victims ----------------
@@ -66,27 +68,34 @@ export function AppProvider({ children }) {
   }, []);
 
   return (
-    <AppContext.Provider
-      value={{
-        users,
-        loggedInUser,
-        setLoggedInUser,
-        addUser,
-        victims,
-        volunteers,
-        alerts,
-        addVictim,
-        updateVictim,
-        deleteVictim,
-        addVolunteer,
-        deleteVolunteer,
-        addAlert,
-        fetchVictims,
-        fetchVolunteers,
-        fetchAlerts,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    React.createElement(
+      AppContext.Provider,
+      {
+        value: {
+          users,
+          loggedInUser,
+          setLoggedInUser,
+          addUser,
+          victims,
+          volunteers,
+          alerts,
+          addVictim,
+          updateVictim,
+          deleteVictim,
+          addVolunteer,
+          deleteVolunteer,
+          addAlert,
+          fetchVictims,
+          fetchVolunteers,
+          fetchAlerts,
+        },
+      },
+      children
+    )
   );
 }
+
+module.exports = {
+  AppProvider,
+  useAppContext
+};
