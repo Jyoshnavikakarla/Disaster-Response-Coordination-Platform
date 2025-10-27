@@ -93,22 +93,24 @@ export default function Sidebar({ isOpen, onClose }) {
             Alerts & Communication
           </Link>
 
-          {loggedInUser.role === "authority" && (
+          {/* Dashboard changes depending on role */}
+          {loggedInUser.role === "authority" ? (
             <Link
               to="/authority"
               className={location.pathname === "/authority" ? "active" : ""}
             >
               Authority Dashboard
             </Link>
+          ) : (
+            <Link
+              to="/dashboard"
+              className={location.pathname === "/dashboard" ? "active" : ""}
+            >
+              My Dashboard
+            </Link>
           )}
 
-          <Link
-            to="/dashboard"
-            className={location.pathname === "/dashboard" ? "active" : ""}
-          >
-            My Dashboard
-          </Link>
-
+          {/* Logout */}
           <div style={{ padding: "12px", color: "white" }}>
             <p>👋 Hello, {loggedInUser?.name}</p>
             <button
