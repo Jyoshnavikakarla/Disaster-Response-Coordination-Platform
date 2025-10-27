@@ -1,18 +1,23 @@
-import express from "express";
-import https from "https";
-import fs from "fs";
-import cors from "cors";
-import authRoutes from "./routes/auth.js";
-import resourceRoutes from "./routes/resources.js";
-import rateLimit from "express-rate-limit";
+const express = require("express");
+const https = require("https");
+const fs = require("fs");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+
+// Routes
+const authRoutes = require("./routes/auth.js");
+const resourceRoutes = require("./routes/resources.js");
+const volunteerRoutes = require("./routes/volunteers.js");
+
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-
 // Limit each IP: 100 requests per 15 minutes
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: "Too many requests from this IP, try again later",
 });
@@ -25,15 +30,10 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/resources", resourceRoutes);
-import volunteerRoutes from "./routes/volunteers.js";
 app.use("/api/volunteers", volunteerRoutes);
-import resourceRoutes from "./routes/resources.js";
-app.use("/api/resources", resourceRoutes);
-
 
 // Self-signed certificate
 const server = https.createServer(
@@ -44,6 +44,6 @@ const server = https.createServer(
   app
 );
 
-server.listen(5000, () =>
-  console.log("✅ HTTPS server running on https://localhost:5000")
-);
+server.listen(5000, () => {
+  console.log("✅ HTTPS server running on https://localhost:5000");
+});
